@@ -8,12 +8,6 @@ Card::Card(char power, char suit) : power(std::toupper(power)), suit(std::touppe
 	}
 }
 
-Card::Card(std::pair<char, char> a) : Card::Card(a.first, a.second) {}
-
-Card::Card(std::initializer_list<char> lst) : Card::Card(*lst.begin(), *std::next(lst.begin())) {
-	if (lst.size() > 2) { throw std::runtime_error("Too many values for initialization"); }
-}
-
 char Card::Power() const noexcept { return power; }
 
 char Card::Suit() const noexcept { return suit; }

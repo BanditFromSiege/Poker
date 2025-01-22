@@ -25,10 +25,7 @@ private:
 
 public:
 	Card() noexcept;
-
 	Card(char power, char suit);
-	Card(std::pair<char, char> a);
-	Card(std::initializer_list<char> lst);
 
 	char Power() const noexcept;
 	char Suit() const noexcept;
