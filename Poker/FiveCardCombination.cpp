@@ -45,7 +45,7 @@ FiveCardCombination::FiveCardCombination(std::vector<Card> lst) {
 	bool gap = false;
 	for (std::size_t i = 1; i < player_cards.size(); ++i) {
 		if (std::abs(Tools::cards.find(player_cards[i].first)->second 
-			- Tools::cards.find(player_cards[i - 1].first)->second == 1)) 
+			- Tools::cards.find(player_cards[i - 1].first)->second) == 1)
 		{
 			++street_series;
 		} 
