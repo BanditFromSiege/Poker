@@ -1,0 +1,9 @@
+﻿  Source.cpp
+D:\C++ коды\Poker\Poker\Stopwatch.h(61,71): warning C4018: <: несоответствие типов со знаком и без знака
+  (компиляция исходного файла "Source.cpp")
+      D:\C++ коды\Poker\Poker\Stopwatch.h(61,71):
+      контекст создания экземпляра шаблона (сначала самый старый)
+          D:\C++ коды\Poker\Poker\Source.cpp(78,3):
+          выполняется компиляция ссылки на экземпляр шаблон функции "void Delay<std::chrono::seconds,std::chrono::high_resolution_clock>(size_t) noexcept"
+  
+  Poker.vcxproj -> D:\C++ коды\Poker\x64\Debug\Poker.exe
