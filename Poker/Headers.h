@@ -1,9 +1,11 @@
 #pragma once
 
 #include <iostream>
+#include <cassert>
 
 #include <vector>
 #include <unordered_map>
+#include <array>
 
 #include <utility>
 #include <chrono>

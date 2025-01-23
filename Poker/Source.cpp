@@ -116,15 +116,45 @@ void test_wallpapper() {
 	}
 }
 
+void unit_tests_card() {
+	auto run_test = [](const char* player, const char* opponent, Poker::Result outcome) -> bool {
+		return Poker::compare_combinations(FiveCardCombination(player), FiveCardCombination(opponent)) == outcome;
+	};
+
+	assert(run_test("2H 3H 4H 5H 6H", "KS AS TS QS JS", Poker::Result::Loss)); 
+	assert(run_test("2H 3H 4H 5H 6H", "AS AD AC AH JD", Poker::Result::Win));
+	assert(run_test("AS AH 2H AD AC", "JS JD JC JH 3D", Poker::Result::Win)); 
+	assert(run_test("2S AH 2H AS AC", "JS JD JC JH AD", Poker::Result::Loss)); 
+	assert(run_test("2S AH 2H AS AC", "2H 3H 5H 6H 7H", Poker::Result::Win));
+	assert(run_test("AS 3S 4S 8S 2S", "2H 3H 5H 6H 7H", Poker::Result::Win));
+	assert(run_test("2H 3H 5H 6H 7H", "2S 3H 4H 5S 6C", Poker::Result::Win));
+	assert(run_test("2S 3H 4H 5S 6C", "3D 4C 5H 6H 2S", Poker::Result::Draw));
+	assert(run_test("2S 3H 4H 5S 6C", "AH AC 5H 6H AS", Poker::Result::Win));
+	assert(run_test("2S 3H 4H 5S AC", "AH AC 5H 6H AS", Poker::Result::Win));
+	assert(run_test("2S 2H 4H 5S 4C", "AH AC 5H 6H AS", Poker::Result::Loss));
+	assert(run_test("2S 2H 4H 5S 4C", "AH AC 5H 6H 7S", Poker::Result::Win));
+	assert(run_test("6S AD 7H 4S AS", "AH AC 5H 6H 7S", Poker::Result::Loss));
+	assert(run_test("2S AH 4H 5S KC", "AH AC 5H 6H 7S", Poker::Result::Loss));
+	assert(run_test("2S 3H 6H 7S 9C", "7H 3C TH 6H 9S", Poker::Result::Loss));
+	assert(run_test("4S 5H 6H TS AC", "3S 5H 6H TS AC", Poker::Result::Win));
+	assert(run_test("2S AH 4H 5S 6C", "AD 4C 5H 6H 2C", Poker::Result::Draw));
+
+	assert(run_test("KC KD KH QS QD", "KS KC KH QC QH", Poker::Result::Draw));
+	assert(run_test("AS 5H 4S 3C 2D", "AS 2S 3S QS KS", Poker::Result::Loss));
+	assert(run_test("AD 2D JD QD KD", "AC TC JC QC KC", Poker::Result::Loss));
+	assert(run_test("AS TS JS QS KS", "AD TD JD QD KD", Poker::Result::Draw));
+	assert(run_test("AH 2S 3S 4H KS", "9D TC JC QD KD", Poker::Result::Loss));
+
+	assert(run_test("AH AS 2D 7S 9S", "AD AH 2H 7C 9C", Poker::Result::Draw));
+}
+
 int main() {
 	//test_check_combination_of_cards();
 	//test_distribution_of_card(100000);
 	//test_of_stopwatch();
 	//test_wallpapper();
 
-	FiveCardCombination c1("AC AD QH QC QS");
-	FiveCardCombination c2("KD KS KH 2H 2C");
-	std::cout << Poker::compare_combinations(c1, c2);
-	
+	unit_tests_card();
+
 	return 0;
 }

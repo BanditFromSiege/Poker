@@ -1,6 +1,6 @@
 #include "FiveCardCombination.h"
 
-int FiveCardCombination::CombinationPower() const noexcept {
+std::uint8_t FiveCardCombination::CombinationPower() const noexcept {
 	return power;
 }
 
@@ -9,6 +9,10 @@ char FiveCardCombination::HighCard() const noexcept {
 }
 
 FiveCardCombination::FiveCardCombination() noexcept = default;
+
+constexpr std::array<char, 4> FiveCardCombination::Kickers() const noexcept {
+	return kickers;
+}
 
 FiveCardCombination::FiveCardCombination(std::vector<Card> lst) {
 	if (lst.size() > 5) { throw std::runtime_error("Too many cards for combination"); }
@@ -24,26 +28,22 @@ FiveCardCombination::FiveCardCombination(std::vector<Card> lst) {
 	std::vector<std::pair<char, std::uint8_t>> player_cards(values.begin(), values.end());
 	std::sort(player_cards.begin(), player_cards.end(), Tools::comparator);
 
-	std::int8_t flash_royal = 0;
-	std::int8_t street_flash = 0;
-	std::int8_t care = 0;
-	std::int8_t full_haus = 0;
-	std::int8_t flash = 0;
-	std::int8_t street = 0;
-	std::int8_t set = 0;
-	std::int8_t dobpare = 0;
-	std::int8_t pare = 0;
-
-	std::vector<std::reference_wrapper<std::int8_t>> res = {
-		flash_royal, street_flash, care, full_haus, flash, street, set, dobpare, pare
-	};
+	std::uint8_t flash_royal = 0;
+	std::uint8_t street_flash = 0;
+	std::uint8_t care = 0;
+	std::uint8_t full_haus = 0;
+	std::uint8_t flash = 0;
+	std::uint8_t street = 0;
+	std::uint8_t set = 0;
+	std::uint8_t dobpare = 0;
+	std::uint8_t pare = 0;
 
 	if (suits.size() == 1) { ++flash; }
 
 	//Street check;
-	std::int8_t street_series = 0;
+	std::uint8_t street_series = 0;
 	bool gap = false;
-	for (std::size_t i = 1; i < player_cards.size(); ++i) {
+	for (std::uint8_t i = 1; i < player_cards.size(); ++i) {
 		if (std::abs(Tools::cards.find(player_cards[i].first)->second 
 			- Tools::cards.find(player_cards[i - 1].first)->second) == 1)
 		{
@@ -75,21 +75,24 @@ FiveCardCombination::FiveCardCombination(std::vector<Card> lst) {
 	else if (pare == 2) { ++dobpare; }
 
 	// Power initialization
-	std::int8_t p = 9;
-	for (std::size_t i = 0; i < res.size(); ++i) {
+	std::vector<std::reference_wrapper<std::uint8_t>> res = {
+		flash_royal, street_flash, care, full_haus, flash, street, set, dobpare, pare
+	};
+
+	std::uint8_t p = 9;
+	for (std::uint8_t i = 0; i < res.size(); ++i, --p) {
 		if (res[i] == 1) {
 			power = p;
 			break;
 		}
-		--p;
 	}
 
 	// High_Card initialization
-	
-	// no comb or street or flash or street flash or royal flash
-	if (power == 0 || power == 4 || power == 5 || power == 8 || power == 9) {
+	bool ace_low = false;
+	// no comb or flash or royal flash
+	if (power == 0 || power == 5 || power == 9) {
 		high_card = player_cards.back().first;
-	} 
+	}
 	else if (power == 1) { // pair
 		for (auto& [x, y] : player_cards) {
 			if (y == 2) {
@@ -126,8 +129,32 @@ FiveCardCombination::FiveCardCombination(std::vector<Card> lst) {
 			}
 		}
 	} 
+	else if (power == 4 || power == 8) { //street or street flash
+		high_card = player_cards.back().first;
+		if ((high_card == 'A' && gap) || (high_card == 'A' && player_cards.front().first == '2')) {
+			high_card = player_cards[player_cards.size() - 2].first;
+			ace_low = true;
+		}
+	}
 	else {
 		throw std::runtime_error("Error");
+	}
+
+	//kickers initialization
+	std::uint8_t count_of_kickers = 0;
+	for (auto& [x, y] : player_cards) {
+		if (x != high_card) {
+			for (std::uint8_t i = 0; i < y; ++i, ++count_of_kickers) {
+				kickers[count_of_kickers] = x;
+			}
+		}
+	}
+	std::reverse(kickers.begin(), kickers.end());
+
+	if (ace_low) {
+		for (std::uint8_t i = 0; i + 1 < kickers.size(); ++i) {
+			std::swap(kickers[i], kickers[i + 1]);
+		}
 	}
 }
 
@@ -140,19 +167,21 @@ FiveCardCombination::FiveCardCombination(std::string str) {
 	std::vector<Card> vec;
 	vec.reserve(5);
 
-	for (std::size_t i = 0; i < str.size(); i += 3) {
+	for (std::uint8_t i = 0; i < str.size(); i += 3) {
 		vec.push_back({str[i], str[i + 1]});
 	}
 
 	FiveCardCombination comb(std::move(vec));
-	power = comb.power;
-	high_card = comb.high_card;
+
+	power = std::move(comb.power);
+	high_card = std::move(comb.high_card);
+	kickers = std::move(comb.kickers);
 }
 
 FiveCardCombination::FiveCardCombination(const char* str) 
 	: FiveCardCombination::FiveCardCombination(std::string(str)) {}
 
-void FiveCardCombination::Combination() const {
+void FiveCardCombination::Combination() const noexcept {
 	switch (power) {
 	case 9: std::cout << "Flash-Royal: " << "High cart - " << high_card;
 		break;
@@ -180,26 +209,51 @@ void FiveCardCombination::Combination() const {
 	std::cout << '\n';
 }
 
-bool operator<(FiveCardCombination comb1, FiveCardCombination comb2) {
+bool operator<(FiveCardCombination comb1, FiveCardCombination comb2) noexcept {
 	if (comb1.CombinationPower() == comb2.CombinationPower()) {
+		if (comb1.HighCard() == comb2.HighCard()) {
+			auto kickers1 = comb1.Kickers();
+			auto kickers2 = comb2.Kickers();
+		
+			for (std::uint8_t i = 0; i < kickers1.size(); ++i) {
+				if ((kickers1[i] != ' ' && kickers2[i] != ' ') 
+					&& (Tools::cards.find(kickers1[i])->second != Tools::cards.find(kickers2[i])->second))
+				{
+					return Tools::cards.find(kickers1[i])->second < Tools::cards.find(kickers2[i])->second;
+				}
+			}
+			return false;
+		}
 		return Tools::cards.find(comb1.HighCard())->second < Tools::cards.find(comb2.HighCard())->second;
 	}
 	return comb1.CombinationPower() < comb2.CombinationPower();
 }
 
-bool operator>(FiveCardCombination comb1, FiveCardCombination comb2) {
+bool operator>(FiveCardCombination comb1, FiveCardCombination comb2) noexcept {
 	return comb2 < comb1;
 }
 
-bool operator==(FiveCardCombination comb1, FiveCardCombination comb2) {
-	return (!(comb1 < comb2) && !(comb1 > comb2)) ? true : false;
+bool operator==(FiveCardCombination comb1, FiveCardCombination comb2) noexcept {
+	return !(comb1 < comb2) && !(comb2 < comb1);
+}
+
+bool operator!=(FiveCardCombination comb1, FiveCardCombination comb2) noexcept {
+	return !(comb1 == comb2);
+}
+
+bool operator<=(FiveCardCombination comb1, FiveCardCombination comb2) noexcept {
+	return !(comb2 < comb1);
+}
+
+bool operator>=(FiveCardCombination comb1, FiveCardCombination comb2) noexcept {
+	return comb2 <= comb1;
 }
 
 namespace Poker {
-	int compare_combinations(FiveCardCombination comb1, FiveCardCombination comb2) {
-		if (comb1 < comb2) { return 2; }
-		else if (comb1 > comb2) { return 1; }
-		else { return 0; }
+	Result compare_combinations(FiveCardCombination comb1, FiveCardCombination comb2) {
+		if (comb1 < comb2) { return Result::Loss; }
+		else if (comb1 > comb2) { return Result::Win; }
+		else { return Result::Draw; }
 	}
 
 	void Index(std::size_t n) {
@@ -228,4 +282,11 @@ namespace Poker {
 			break;
 		}
 	}
+}
+
+std::ostream& operator<<(std::ostream& out, Poker::Result res) {
+	if (res == Poker::Result::Draw) { out << "Draw"; }
+	else if (res == Poker::Result::Win) { out << "Win"; }
+	else { out << "Loss"; }
+	return out;
 }

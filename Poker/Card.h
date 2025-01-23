@@ -3,7 +3,7 @@
 #include "Headers.h"
 
 namespace Tools {
-	const std::unordered_map<char, int8_t> cards = {
+	const std::unordered_map<char, std::uint8_t> cards = {
 		{'2', 2}, {'3', 3}, {'4', 4}, {'5', 5}, {'6', 6}, {'7', 7}, {'8', 8},
 		{'9', 9}, {'T', 10}, {'J', 11}, {'Q', 12}, {'K', 13}, {'A', 14},
 	};
@@ -33,5 +33,9 @@ public:
 
 bool operator<(Card c1, Card c2) noexcept;
 bool operator>(Card c1, Card c2) noexcept;
+bool operator==(Card c1, Card c2) noexcept;
+bool operator!=(Card c1, Card c2) noexcept;
+bool operator<=(Card c1, Card c2) noexcept;
+bool operator>=(Card c1, Card c2) noexcept;
 
 std::ostream& operator<<(std::ostream& out, Card c);

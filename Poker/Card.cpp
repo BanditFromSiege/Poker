@@ -16,9 +16,11 @@ bool operator<(Card c1, Card c2) noexcept {
 	return Tools::cards.find(c1.Power())->second < Tools::cards.find(c2.Power())->second;
 }
 
-bool operator>(Card c1, Card c2) noexcept {
-	return c2 < c1;
-}
+bool operator>(Card c1, Card c2) noexcept { return c2 < c1; }
+bool operator==(Card c1, Card c2) noexcept { return !(c1 < c2) && !(c2 < c1); }
+bool operator!=(Card c1, Card c2) noexcept { return !(c1 == c2); }
+bool operator<=(Card c1, Card c2) noexcept { return !(c2 < c1); }
+bool operator>=(Card c1, Card c2) noexcept { return c2 <= c1; }
 
 std::ostream& operator<<(std::ostream& out, Card c) {
 	out << c.Power() << c.Suit();
