@@ -12,5 +12,6 @@
 #include <algorithm>
 #include <memory>
 #include <random>
+#include <ranges>
 
 #include <SFML/Graphics.hpp>

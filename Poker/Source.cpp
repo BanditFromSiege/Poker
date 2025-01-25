@@ -1,4 +1,4 @@
-#include "FiveCardCombination.h"
+#include "SevenCardCombination.h"
 #include "Stopwatch.h"
 
 void test_check_combination_of_cards() {
@@ -56,7 +56,7 @@ void test_distribution_of_card(int m) {
 
 		FiveCardCombination temp(std::move(res));
 		hand = std::move(temp);
-		++pw[hand.CombinationPower()];
+		++pw[hand.getPower()];
 	}
 
 	std::vector<std::pair<int, int>> vec(pw.begin(), pw.end());
@@ -99,13 +99,13 @@ void test_wallpapper() {
 
 	sf::Sprite ph(wallpapper);
 
-	sf::RenderWindow window(sf::VideoMode(1280, 720), "Poker");
+	sf::RenderWindow window(sf::VideoMode(1920, 1080), "Poker", sf::Style::Fullscreen);
 
 	while (window.isOpen()) {
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
-			if (event.type == sf::Event::Closed) {
+			if (event.type == sf::Event::Closed || (event.KeyPressed && event.key.code == sf::Keyboard::Escape)) {
 				window.close();
 			}
 		}
@@ -148,6 +148,23 @@ void unit_tests_card() {
 	assert(run_test("AH AS 2D 7S 9S", "AD AH 2H 7C 9C", Poker::Result::Draw));
 }
 
+void unit_tests_seven_card() {
+	auto run_test = [](const char* player, const char* opponent, Poker::Result outcome) -> bool {
+		return Poker::compare_combinations(SevenCardCombination(player), SevenCardCombination(opponent)) == outcome;
+	};
+
+	assert(run_test("8S 3S TC 7H AH KS TD", "8S 3S TC 7H AH QC TH", Poker::Result::Win));
+	assert(run_test("KS QH AC QS 5S TD QD", "KS QH AC QS 5S QC 9H", Poker::Result::Draw));
+	assert(run_test("5S 9D AC KH 4S QS 9C", "5S 9D AC KH 4S 9H TH", Poker::Result::Win));
+	assert(run_test("5D 8S TD 7H 2C KS 2S", "5D 8S TD 7H 2C 2H JC", Poker::Result::Win));
+	assert(run_test("9D 9H 9S 9C 3H AS 2H", "9D 9H 9S 9C 3H JH JC", Poker::Result::Win));
+	assert(run_test("KD QH TS 3C AH JS 7H", "KD QH TS 3C AH JD 9C", Poker::Result::Draw));
+	assert(run_test("KD QH TS JC AH 4S 4H", "KD QH TS JC AH 6S 6H", Poker::Result::Draw));
+	assert(run_test("4C 2D 7S 7D JC 9S 7C", "4C 2D 7S 7D JC 7H 6D", Poker::Result::Win));
+	assert(run_test("8S 3D 4H 7C 2S QH TH", "8S 3D 4H 7C 2S JC 9D", Poker::Result::Win));
+	assert(run_test("6S 3S AC KH 9H QS 7D", "6S 3S AC KH 9H JH TC", Poker::Result::Win));
+}
+
 int main() {
 	//test_check_combination_of_cards();
 	//test_distribution_of_card(100000);
@@ -155,6 +172,7 @@ int main() {
 	//test_wallpapper();
 
 	unit_tests_card();
+	unit_tests_seven_card();
 
 	return 0;
 }
