@@ -1,5 +1,4 @@
-#include "PokerLogic/SevenCardCombination.h"
-#include "Stopwatch.h"
+#include "ConsoleRender/ConsolePokerGame.h"
 
 namespace Tests {
 	void test_check_combination_of_cards() {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RandomGenerator.h"
+#include "../ToolsClasses/RandomGenerator.h"
 
 class Player {
 private:

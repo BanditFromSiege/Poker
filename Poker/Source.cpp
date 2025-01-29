@@ -1,5 +1,4 @@
 #include "ConsoleRender/ConsolePokerGame.h"
-#include "Stopwatch.h"
 
 namespace Tests {
 	extern void test_check_combination_of_cards();
@@ -17,8 +16,9 @@ namespace Tests {
 int main() {
 	Tests::Run_tests();
 	
-	//auto ptr = std::make_unique<ConsolePokerGame>();
-	//(*ptr).Run();
+	/*
+	auto ptr = std::make_unique<ConsolePokerGame>();
+	(*ptr).Run();*/
 
 	return 0;
 }

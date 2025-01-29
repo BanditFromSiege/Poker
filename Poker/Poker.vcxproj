@@ -144,25 +144,25 @@
   <ItemGroup>
     <ClCompile Include="ConsoleRender\ConsolePokerGame.cpp" />
     <ClCompile Include="PokerLogic\Player.cpp" />
-    <ClCompile Include="PokerLogic\RandomGenerator.cpp" />
+    <ClCompile Include="ToolsClasses\RandomGenerator.cpp" />
     <ClCompile Include="Tests.cpp" />
     <ClCompile Include="WindowRender\PokerGame.cpp" />
     <ClCompile Include="PokerLogic\Card.cpp" />
     <ClCompile Include="PokerLogic\FiveCardCombination.cpp" />
     <ClCompile Include="PokerLogic\SevenCardCombination.cpp" />
     <ClCompile Include="Source.cpp" />
-    <ClCompile Include="Stopwatch.cpp" />
+    <ClCompile Include="ToolsClasses\Stopwatch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConsoleRender\ConsolePokerGame.h" />
     <ClInclude Include="Headers.h" />
     <ClInclude Include="PokerLogic\Player.h" />
-    <ClInclude Include="PokerLogic\RandomGenerator.h" />
+    <ClInclude Include="ToolsClasses\RandomGenerator.h" />
     <ClInclude Include="WindowRender\PokerGame.h" />
     <ClInclude Include="PokerLogic\Card.h" />
     <ClInclude Include="PokerLogic\FiveCardCombination.h" />
     <ClInclude Include="PokerLogic\SevenCardCombination.h" />
-    <ClInclude Include="Stopwatch.h" />
+    <ClInclude Include="ToolsClasses\Stopwatch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

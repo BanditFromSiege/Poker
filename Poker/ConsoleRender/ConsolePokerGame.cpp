@@ -77,11 +77,21 @@ void ConsolePokerGame::Preflop() {
 
 	std::cout << "You have place by number: " << int(position_player) << '\n';
 
+	if (position_dealer == position_player) {
+		std::cout << "Congratulations! You are dealer" << '\n';
+	}
+
 	std::cout << "Press SPACE to continue..." << '\n';
 	while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space));
 
+	bool bet = false;
+
 	for (std::uint8_t i = 0; i < players.size(); ++i) {
+		std::cout << '\n';
 		if (i != position_player && val_players_round[i] && val_players_live[i]) {
+			std::cout << "Player number " << int(i + 1) << " moves" << '\n';
+			Delay<milliseconds>(500);
+
 			auto hand = players[i].getPowerHand();
 			if (hand.first) {
 				if (rand.Probability(60)) {
@@ -119,8 +129,9 @@ void ConsolePokerGame::Preflop() {
 				}
 			}
 		}
-		else {
+		else if (val_players_round[i] && val_players_live[i]) {
 			std::cout << "Choice you move: " << '\n';
+			while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space));
 			//TODO
 		}
 	}

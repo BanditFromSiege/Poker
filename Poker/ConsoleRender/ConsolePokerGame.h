@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../PokerLogic/Player.h"
+#include "../ToolsClasses/Stopwatch.h"
 
 class ConsolePokerGame {
 private:
