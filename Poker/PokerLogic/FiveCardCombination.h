@@ -25,10 +25,10 @@ public:
 	
 	FiveCardCombination() noexcept;
 
-	FiveCardCombination(const std::vector<Card>& vec);
-	FiveCardCombination(std::initializer_list<Card> lst);
-	FiveCardCombination(const std::string& str);
-	FiveCardCombination(const char* str);
+	FiveCardCombination(const std::vector<Card>& vector_of_cards);
+	FiveCardCombination(std::initializer_list<Card> list_of_cards);
+	FiveCardCombination(const std::string& string_of_cards);
+	FiveCardCombination(const char* string_of_cards);
 	
 	void ShowCombination() const noexcept;
 };

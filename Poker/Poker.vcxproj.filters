@@ -45,6 +45,9 @@
     <ClCompile Include="ToolsClasses\RandomGenerator.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="PokerLogic\SixCardCombination.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ToolsClasses\Stopwatch.h">
@@ -72,6 +75,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="ToolsClasses\RandomGenerator.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="PokerLogic\SixCardCombination.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

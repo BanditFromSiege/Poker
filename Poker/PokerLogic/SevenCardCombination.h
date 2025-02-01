@@ -4,15 +4,16 @@
 
 class SevenCardCombination : public FiveCardCombination {
 private:
-	FiveCardCombination find_best(const std::vector<Card>& vec, const std::vector<Card>& add_vec);
-	FiveCardCombination cast_string(const std::string& str, const std::string& add_str);
+	FiveCardCombination find_best_seven(const std::vector<Card>& table_cards, const std::vector<Card>& hand_cards);
+	FiveCardCombination cast_string_seven(const std::string& table_cards, const std::string& hand_cards);
+
 public:
 	SevenCardCombination() noexcept;
-	SevenCardCombination(const std::vector<Card>& vec, const std::vector<Card>& add_vec);
-	SevenCardCombination(const std::string& str, const std::string& add_str);
-	SevenCardCombination(const std::string& str);
-	SevenCardCombination(const std::vector<Card>& vec);
-	SevenCardCombination(const char* str);
+	SevenCardCombination(const std::vector<Card>& table_cards, const std::vector<Card>& hand_cards);
+	SevenCardCombination(const std::string& table_cards, const std::string& hand_cards);
+	SevenCardCombination(const std::string& string_of_cards);
+	SevenCardCombination(const std::vector<Card>& vector_of_cards);
+	SevenCardCombination(const char* string_of_cards);
 };
 
 namespace Poker {

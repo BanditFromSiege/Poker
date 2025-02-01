@@ -3,15 +3,15 @@
 ConsolePokerGame::ConsolePokerGame() = default;
 
 ConsolePokerGame::ConsolePokerGame(std::uint8_t n) {
-	if (!(n >= 2 && n <= 8)) { throw std::runtime_error("Error"); }
+	if (!(n >= 2 && n <= 8)) { 
+		throw std::runtime_error("Error");
+	}
 	count_players = n;
 }
 
 void ConsolePokerGame::InitializationPlayers(std::uint32_t balance) {
 	for (std::uint8_t i = 0; i < count_players; ++i) {
-		players.push_back({ "2H", "2D", balance });
-		val_players_round.push_back(true);
-		val_players_live.push_back(true);
+		players.push_back({ "2H", "2D", balance, true, true, false});
 	}
 }
 
@@ -31,17 +31,32 @@ void ConsolePokerGame::InitializationHands() {
 
 	std::uint8_t count = 0;
 	for (std::uint8_t i = 0; i < count_players; ++i) {
-		players[i].ChangeFirstCard(cards[count++]);
-		players[i].ChangeSecondCard(cards[count++]);
-		val_players_round[i] = true;
+		players[i].Change_First_Card(cards[count++]);
+		players[i].Change_Second_Card(cards[count++]);
+		players[i].Change_valid_in_round(true);
 	}
+
 	for (std::uint8_t i = 0; i < 5; ++i) {
 		table.push_back(cards[count++]);
 	}
 
-	if (rounds != 1) { position_dealer = (++position_dealer) % count_players; }
+	if (rounds == 1) {
+		std::vector<std::uint8_t> index_of_valid_players;
 
-	BigBlind = BigBlind * ((++round_count / 5) + 1);
+		for (std::uint8_t i = 0; auto & player : players) {
+			if (player.get_Valid_in_game()) {
+				index_of_valid_players.push_back(i++);
+			}
+		}
+
+		rand.Shuffle(index_of_valid_players);
+		position_dealer = index_of_valid_players.front();
+	}
+	else { 
+		position_dealer = (++position_dealer) % count_players;
+	}
+
+	bigBlind = bigBlind * ((++round_count / 5) + 1);
 }
 
 void ConsolePokerGame::Check() {
@@ -52,12 +67,28 @@ void ConsolePokerGame::Call() {
 	//TODO
 }
 
-void ConsolePokerGame::Bet() {
+void ConsolePokerGame::Bet(std::uint8_t i, std::uint32_t bet) {
+	if (!global_bet) {
+		if ((players[i].get_Balance() - bet) > 0) {
+			players[i].Change_Balance(players[i].get_Balance() - bet);
+
+			std::cout << "Player number " << int(i) + 1 << " maked bet in " << bet << '\n';
+			players[i].Change_bet_check(true);
+		}
+	}
 	//TODO
 }
 
+bool ConsolePokerGame::Any_did_bet() {
+	bool res = true;
+	for (auto& player : players) {
+		res = player.get_Bet_check();
+	}
+	return res;
+}
+
 void ConsolePokerGame::Fold(std::uint8_t i) {
-	val_players_round[i] = false;
+	players[i].Change_valid_in_round(false);
 	//TODO
 }
 
@@ -72,40 +103,50 @@ void ConsolePokerGame::Preflop() {
 	InitializationHands();
 
 	std::cout << "Round: " << rounds << '\n';
-	std::cout << "Blinds: " << BigBlind * 0.5 << ' ' << BigBlind << '\n';
-	std::cout << "Dealer's place is " << int(position_dealer) << '\n';
+	std::cout << "Blinds: " << bigBlind * 0.5 << ' ' << bigBlind << '\n';
+	std::cout << "Dealer's place is " << int(position_dealer) + 1 << '\n';
 
-	std::cout << "You have place by number: " << int(position_player) << '\n';
+	std::cout << "You have place by number: " << int(position_player) + 1 << '\n';
 
 	if (position_dealer == position_player) {
-		std::cout << "Congratulations! You are dealer" << '\n';
+		std::cout << "Congratulations! You are dealer" << '\n' << '\n';
 	}
+
+	std::cout << "You cards " << players[position_player].get_First()
+		<< ' ' << players[position_player].get_Second() << '\n';
+
+	std::uint8_t index_little_blind = (position_dealer + 1) % count_players;
+	std::uint8_t index_big_blind = (index_little_blind + 1) % count_players;
+
+	Bet(index_little_blind, 0.5 * bigBlind);
+	Bet(index_big_blind, bigBlind);
 
 	std::cout << "Press SPACE to continue..." << '\n';
 	while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space));
 
-	bool bet = false;
-
-	for (std::uint8_t i = 0; i < players.size(); ++i) {
+	for  (std::uint8_t i = (index_big_blind + 1) % count_players; ; i = (i + 1) % count_players) {
 		std::cout << '\n';
-		if (i != position_player && val_players_round[i] && val_players_live[i]) {
+		if (i != position_player && players[i].get_Valid_in_round() && players[i].get_Valid_in_game()) {
 			std::cout << "Player number " << int(i + 1) << " moves" << '\n';
+
 			Delay<milliseconds>(500);
 
-			auto hand = players[i].getPowerHand();
-			if (hand.first) {
-				if (rand.Probability(60)) {
+			Tools::Hand_of_cards hand({ players[i].get_First(), players[i].get_Second() });
+
+			auto position = get_power_hand(*ptr_to_type_of_hands, hand);
+		
+			if (position == 4) {
+				if (rand.Probability(35)) {
 					//TODO
 				}
-				else if (rand.Probability(35)) {
+				else if (rand.Probability(60)) {
 					//TODO
 				}
 				else {
 					//TODO
 				}
 			}
-			else if (hand.second && (std::abs(Tools::cards.find(players[i].getFirst().Power())->second 
-					- Tools::cards.find(players[i].getSecond().Power())->second) == 1))
+			else if (position == 3)
 			{
 				if (rand.Probability(65)) {
 					//TODO
@@ -117,7 +158,7 @@ void ConsolePokerGame::Preflop() {
 					//TODO
 				}
 			}
-			else {
+			else if (position == 2) {
 				if (rand.Probability(4)) {
 					//TODO
 				}
@@ -128,12 +169,20 @@ void ConsolePokerGame::Preflop() {
 					//TODO
 				}
 			}
+			else if (position == 1) {
+
+			}
+			else {
+
+			}
 		}
-		else if (val_players_round[i] && val_players_live[i]) {
+		else if (players[i].get_Valid_in_round() && players[i].get_Valid_in_game()) {
 			std::cout << "Choice you move: " << '\n';
 			while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space));
 			//TODO
 		}
+
+		i = (i + 1) % count_players;
 	}
 	//TODO
 }

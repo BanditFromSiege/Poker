@@ -144,6 +144,7 @@
   <ItemGroup>
     <ClCompile Include="ConsoleRender\ConsolePokerGame.cpp" />
     <ClCompile Include="PokerLogic\Player.cpp" />
+    <ClCompile Include="PokerLogic\SixCardCombination.cpp" />
     <ClCompile Include="ToolsClasses\RandomGenerator.cpp" />
     <ClCompile Include="Tests.cpp" />
     <ClCompile Include="WindowRender\PokerGame.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="ConsoleRender\ConsolePokerGame.h" />
     <ClInclude Include="Headers.h" />
     <ClInclude Include="PokerLogic\Player.h" />
+    <ClInclude Include="PokerLogic\SixCardCombination.h" />
     <ClInclude Include="ToolsClasses\RandomGenerator.h" />
     <ClInclude Include="WindowRender\PokerGame.h" />
     <ClInclude Include="PokerLogic\Card.h" />

@@ -14,13 +14,15 @@ constexpr std::array<char, 4> FiveCardCombination::getKickers() const noexcept {
 
 FiveCardCombination::FiveCardCombination() noexcept = default;
 
-FiveCardCombination::FiveCardCombination(const std::vector<Card>& vec) {
-	if (vec.size() != 5) { throw std::runtime_error("Not five cards for combination"); }
+FiveCardCombination::FiveCardCombination(const std::vector<Card>& vector_of_cards) {
+	if (vector_of_cards.size() != 5) { 
+		throw std::runtime_error("Not five cards for combination");
+	}
 
 	std::unordered_map<char, std::uint8_t> values;
 	std::unordered_map<char, std::uint8_t> suits;
 
-	for (Card c : vec) {
+	for (Card c : vector_of_cards) {
 		++values[c.Power()];
 		++suits[c.Suit()];
 	}
@@ -63,10 +65,10 @@ FiveCardCombination::FiveCardCombination(const std::vector<Card>& vec) {
 	}
 	else if (straight == 1 && flush == 1) { ++straight_flush; }
 
-	for (auto [x, y] : player_cards) {
-		if (y == 2) { ++pair; }
-		else if (y == 3) { ++set; }
-		else if (y == 4) { ++care; }
+	for (auto [card, count] : player_cards) {
+		if (count == 2) { ++pair; }
+		else if (count == 3) { ++set; }
+		else if (count == 4) { ++care; }
 	}
 
 	if (set == 1 && pair == 1) { ++full_house; }
@@ -94,46 +96,46 @@ FiveCardCombination::FiveCardCombination(const std::vector<Card>& vec) {
 		high_card = player_cards.back().first;
 	}
 	else if (power == Poker::Combination::pair) {
-		for (auto [x, y] : player_cards) {
-			if (y == 2) {
-				high_card = x;
+		for (auto [card, count] : player_cards) {
+			if (count == 2) {
+				high_card = card;
 				break;
 			}
 		}
 	}
 	else if (power == Poker::Combination::two_pair) {
-		bool hc = true;
-		for (auto [x, y] : player_cards | std::ranges::views::reverse) {
-			if (y == 2 && hc) {
-				high_card = x;
-				hc = false;
+		bool high_card_checker = true;
+		for (auto [card, count] : player_cards | std::ranges::views::reverse) {
+			if (count == 2 && high_card_checker) {
+				high_card = card;
+				high_card_checker = false;
 			}
-			else if (y == 2 && !hc) {
-				kickers[count_of_kickers++] = x;
+			else if (count == 2 && !high_card_checker) {
+				kickers[count_of_kickers++] = card;
 			}
 		}
 	}
 	else if (power == Poker::Combination::set) {
-		for (auto [x, y] : player_cards) {
-			if (y == 3) {
-				high_card = x;
+		for (auto [card, count] : player_cards) {
+			if (count == 3) {
+				high_card = card;
 				break;
 			}
 		}
 	}
 	else if (power == Poker::Combination::full_house) {
-		for (auto [x, y] : player_cards) {
-			if (y == 3) {
-				high_card = x;
-			} else if (y == 2) {
-				kickers[count_of_kickers++] = x;
+		for (auto [card, count] : player_cards) {
+			if (count == 3) {
+				high_card = card;
+			} else if (count == 2) {
+				kickers[count_of_kickers++] = card;
 			}
 		}
 	}
 	else if (power == Poker::Combination::care) {
-		for (auto [x, y] : player_cards) {
-			if (y == 4) {
-				high_card = x;
+		for (auto [card, count] : player_cards) {
+			if (count == 4) {
+				high_card = card;
 				break;
 			}
 		}
@@ -147,9 +149,9 @@ FiveCardCombination::FiveCardCombination(const std::vector<Card>& vec) {
 	}
 
 	//kickers initialization
-	for (auto [x, y] : player_cards) {
-		if (x != high_card) {
-			kickers[count_of_kickers++] = x;
+	for (auto [card, count] : player_cards) {
+		if (card != high_card) {
+			kickers[count_of_kickers++] = card;
 		}
 	}
 	std::reverse(kickers.begin(), kickers.end());
@@ -164,25 +166,27 @@ FiveCardCombination::FiveCardCombination(const std::vector<Card>& vec) {
 FiveCardCombination::FiveCardCombination(std::initializer_list<Card> lst)
 	: FiveCardCombination::FiveCardCombination(std::vector<Card>(std::move(lst))) {}
 
-FiveCardCombination::FiveCardCombination(const std::string& str) {
-	if (str.size() != 14) { throw std::runtime_error("Not five cards for combination"); }
-
-	std::vector<Card> vec;
-	vec.reserve(5);
-
-	for (std::uint8_t i = 0; i < str.size(); i += 3) {
-		vec.push_back({str[i], str[i + 1]});
+FiveCardCombination::FiveCardCombination(const std::string& string_of_cards) {
+	if (string_of_cards.size() != 14) { 
+		throw std::runtime_error("Not five cards for combination");
 	}
 
-	FiveCardCombination comb(std::move(vec));
+	std::vector<Card> vector_of_cards;
+	vector_of_cards.reserve(5);
 
-	power = std::move(comb.power);
-	high_card = std::move(comb.high_card);
-	kickers = std::move(comb.kickers);
+	for (std::uint8_t i = 0; i < string_of_cards.size(); i += 3) {
+		vector_of_cards.push_back({string_of_cards[i], string_of_cards[i + 1]});
+	}
+
+	FiveCardCombination combination(std::move(vector_of_cards));
+
+	power = std::move(combination.power);
+	high_card = std::move(combination.high_card);
+	kickers = std::move(combination.kickers);
 }
 
-FiveCardCombination::FiveCardCombination(const char* str) 
-	: FiveCardCombination::FiveCardCombination(std::string(str)) {}
+FiveCardCombination::FiveCardCombination(const char* string_of_cards) 
+	: FiveCardCombination::FiveCardCombination(std::string(string_of_cards)) {}
 
 void FiveCardCombination::ShowCombination() const noexcept {
 	switch (static_cast<std::uint8_t>(power)) {
