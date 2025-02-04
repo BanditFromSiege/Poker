@@ -1,63 +1,23 @@
 #pragma once
 
-#include "../Headers.h"
+#include "Card.h"
 
-namespace Tools {
-	const std::unordered_map<char, std::uint8_t> cards = {
-		{'2', 2}, {'3', 3}, {'4', 4}, {'5', 5}, {'6', 6}, {'7', 7}, {'8', 8},
-		{'9', 9}, {'T', 10}, {'J', 11}, {'Q', 12}, {'K', 13}, {'A', 14},
-	};
+struct Hand_of_cards {
+	char card1 = ' ';
+	char card2 = ' ';
+	bool suit_equal = false;
 
-	constexpr inline auto comparator = 
-		[](std::pair<char, std::uint8_t> p1, std::pair<char, std::uint8_t> p2) {
-			return cards.find(p1.first)->second < cards.find(p2.first)->second;
-	};
-
-	constexpr inline auto suit_check = [](char s) {
-		return (s == 'S' || s == 'H' || s == 'D' || s == 'C');
-	};
-}
-
-class Card {
-private:
-	char power = ' ';
-	char suit = ' ';
-
-public:
-	Card() noexcept;
-	Card(char power, char suit);
-	Card(const std::string& str);
-	Card(const char* str);
-
-	char Power() const noexcept;
-	char Suit() const noexcept;
+	Hand_of_cards(char card1, char card2, bool suit_equal);
+	Hand_of_cards(Card other_card1, Card other_card2);
 };
 
-bool operator<(Card c1, Card c2) noexcept;
-bool operator>(Card c1, Card c2) noexcept;
-bool operator==(Card c1, Card c2) noexcept;
-bool operator!=(Card c1, Card c2) noexcept;
-bool operator<=(Card c1, Card c2) noexcept;
-bool operator>=(Card c1, Card c2) noexcept;
-
-std::ostream& operator<<(std::ostream& out, Card c);
+bool operator==(Hand_of_cards hand1, Hand_of_cards hand2);
 
 namespace Tools {
-	struct Hand_of_cards {
-		char c1 = ' ';
-		char c2 = ' ';
-		bool suit_equal = false;
-
-		Hand_of_cards(char c1, char c2, bool suit_equal);
-		Hand_of_cards(Card cd1, Card cd2);
-	};
-
-	bool operator==(Hand_of_cards hand1, Hand_of_cards hand2);
-
 	const auto hash = [](Hand_of_cards hoc) {
-		auto h1 = std::hash<char>{}(hoc.c1);
-		auto h2 = std::hash<char>{}(hoc.c2);
-		auto h3 = std::hash<bool>{}(hoc.suit_equal);
+		std::size_t h1 = std::hash<char>{}(hoc.card1);
+		std::size_t h2 = std::hash<char>{}(hoc.card2);
+		std::size_t h3 = std::hash<bool>{}(hoc.suit_equal);
 		return h1 ^ (h2 << 1) ^ (h3 << 2);
 	};
 

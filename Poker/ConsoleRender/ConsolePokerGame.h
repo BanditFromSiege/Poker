@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../PokerLogic/Player.h"
+#include "../PokerLogic/PlayerLogic/Player.h"
 #include "../ToolsClasses/Stopwatch.h"
 
 class ConsolePokerGame {
@@ -10,29 +10,34 @@ private:
 
 	RandomGenerator rand;
 
-	std::uint32_t bank = 0;
+	std::uint32_t pot = 0;
 	std::uint32_t rounds = 1;
 	
-	std::uint32_t bigBlind = 50;
+	std::uint16_t bigBlind = 50;
+	std::uint16_t max_bet = 0;
+
 	std::uint8_t round_count = 0;
 
 	std::uint8_t count_players = 6;
-
 	std::uint8_t position_dealer = 0;
 	std::uint8_t position_player = rand.getRandomNumber(0, count_players - 1);
-
-	bool global_bet = true;
 
 	std::unique_ptr<Tools::Type_of_hands> ptr_to_type_of_hands
 		= std::make_unique<Tools::Type_of_hands>();
 
-	void InitializationPlayers(std::uint32_t balance);
+	bool end_game_on_preflop = false;
+
+	void InitializationPlayers(std::uint16_t balance);
 	void InitializationHands();
 
-	void Check();
-	void Call();
-	void Bet(std::uint8_t i, std::uint32_t bet);
-	bool Any_did_bet();
+	bool everyone_did_bet();
+	std::uint8_t players_in_round();
+
+	void Check(std::uint8_t i);
+	void Call(std::uint8_t i);
+	void Raise(std::uint8_t i, std::uint8_t multiply);
+
+	void Bet(std::uint8_t i, std::uint16_t bet);
 	void Fold(std::uint8_t i);
 
 	void Gretings();

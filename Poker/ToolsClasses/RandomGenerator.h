@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../PokerLogic/SevenCardCombination.h"
-#include "../PokerLogic/SixCardCombination.h"
+#include "../PokerLogic/CombinationLogic/CardCombination.h"
 
 class RandomGenerator {
 private:

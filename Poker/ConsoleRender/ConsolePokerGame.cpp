@@ -3,15 +3,15 @@
 ConsolePokerGame::ConsolePokerGame() = default;
 
 ConsolePokerGame::ConsolePokerGame(std::uint8_t n) {
-	if (!(n >= 2 && n <= 8)) { 
+	if (!(n >= 2 && n <= 8)) {
 		throw std::runtime_error("Error");
 	}
 	count_players = n;
 }
 
-void ConsolePokerGame::InitializationPlayers(std::uint32_t balance) {
+void ConsolePokerGame::InitializationPlayers(std::uint16_t balance) {
 	for (std::uint8_t i = 0; i < count_players; ++i) {
-		players.push_back({ "2H", "2D", balance, true, true, false});
+		players.push_back({ "2H", "2D", balance, 0, true, true});
 	}
 }
 
@@ -52,44 +52,67 @@ void ConsolePokerGame::InitializationHands() {
 		rand.Shuffle(index_of_valid_players);
 		position_dealer = index_of_valid_players.front();
 	}
-	else { 
+	else {
 		position_dealer = (++position_dealer) % count_players;
 	}
 
 	bigBlind = bigBlind * ((++round_count / 5) + 1);
 }
 
-void ConsolePokerGame::Check() {
-	//TODO
-}
-
-void ConsolePokerGame::Call() {
-	//TODO
-}
-
-void ConsolePokerGame::Bet(std::uint8_t i, std::uint32_t bet) {
-	if (!global_bet) {
-		if ((players[i].get_Balance() - bet) > 0) {
-			players[i].Change_Balance(players[i].get_Balance() - bet);
-
-			std::cout << "Player number " << int(i) + 1 << " maked bet in " << bet << '\n';
-			players[i].Change_bet_check(true);
+bool ConsolePokerGame::everyone_did_bet() {
+	bool result = true;
+	for (auto& player : players) {
+		if (player.get_Valid_in_round()) {
+			result = (player.get_Bet() == max_bet);
 		}
 	}
-	//TODO
+	return result;
 }
 
-bool ConsolePokerGame::Any_did_bet() {
-	bool res = true;
+std::uint8_t ConsolePokerGame::players_in_round() {
+	std::uint8_t count = 0;
 	for (auto& player : players) {
-		res = player.get_Bet_check();
+		count += player.get_Valid_in_round();
 	}
-	return res;
+	return count;
+}
+
+void ConsolePokerGame::Check(std::uint8_t i) {
+	std::cout << "Check: ";
+	std::cout << "Player number " << int(i) + 1 << " maked call " << '\n';
+}
+
+void ConsolePokerGame::Call(std::uint8_t i) {
+	std::cout << "Call: ";
+	Bet(i, max_bet - players[i].get_Bet());
+}
+
+void ConsolePokerGame::Raise(std::uint8_t i, std::uint8_t multiply) {
+	std::cout << "Raise: ";
+	Bet(i, max_bet * multiply);
+}
+
+void ConsolePokerGame::Bet(std::uint8_t i, std::uint16_t bet) {
+	if ((players[i].get_Balance() - bet) >= 0) {
+
+		max_bet = std::max(bet, max_bet);
+		players[i].Change_Bet(bet);
+		players[i].Change_Balance(players[i].get_Balance() - bet);
+
+		if (players[i].get_Balance() == 0) {
+			std::cout << "Player number " << int(i) + 1 << " maked all - in " << bet << '\n';
+		} else { 
+			std::cout << "Player number " << int(i) + 1 << " maked bet in " << bet << '\n';
+		}
+	}
+	else {
+		//TODO
+	}
 }
 
 void ConsolePokerGame::Fold(std::uint8_t i) {
+	std::cout << "Fold: " << "Player number " << int(i) + 1 << " maked fold " << '\n';
 	players[i].Change_valid_in_round(false);
-	//TODO
 }
 
 void ConsolePokerGame::Gretings() {
@@ -124,65 +147,264 @@ void ConsolePokerGame::Preflop() {
 	std::cout << "Press SPACE to continue..." << '\n';
 	while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space));
 
-	for  (std::uint8_t i = (index_big_blind + 1) % count_players; ; i = (i + 1) % count_players) {
+	for (std::uint8_t i = (index_big_blind + 1) % count_players; ; i = (i + 1) % count_players) {
 		std::cout << '\n';
+		
+		//TODO
+		auto count = players_in_round();
+
+		if (count == 1 && i != position_player) {
+			std::cout << "Player number " << i << "won" << '\n';
+			players[i].Change_Balance(max_bet);
+			max_bet = 0;
+			end_game_on_preflop = true;
+			std::cout << "Press SPACE to continue..." << '\n';
+			while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space));
+			break;
+			//TODO
+		}
+		else if (count == 1) {
+			std::cout << "Congratulations! You are won" << '\n';
+			players[i].Change_Balance(max_bet);
+			max_bet = 0;
+			end_game_on_preflop = true;
+			std::cout << "Press SPACE to continue..." << '\n';
+			while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space));
+			break;
+			//TODO
+		}
+
+		if (i == index_big_blind && everyone_did_bet()) {
+			std::cout << "Go to flop" << "\n";
+			std::cout << "Press SPACE to continue..." << '\n';
+			while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space));
+			break;
+			//TODO
+		}
+
 		if (i != position_player && players[i].get_Valid_in_round() && players[i].get_Valid_in_game()) {
+			std::cout << "PLayers in round: " << (int)count << '\n';
 			std::cout << "Player number " << int(i + 1) << " moves" << '\n';
 
 			Delay<milliseconds>(500);
 
-			Tools::Hand_of_cards hand({ players[i].get_First(), players[i].get_Second() });
+			Hand_of_cards hand({ players[i].get_First(), players[i].get_Second() });
+			std::uint8_t power_hand = get_power_hand(*ptr_to_type_of_hands, hand);
 
-			auto position = get_power_hand(*ptr_to_type_of_hands, hand);
-		
-			if (position == 4) {
-				if (rand.Probability(35)) {
-					//TODO
-				}
-				else if (rand.Probability(60)) {
-					//TODO
-				}
-				else {
-					//TODO
-				}
-			}
-			else if (position == 3)
-			{
-				if (rand.Probability(65)) {
-					//TODO
-				}
-				else if (rand.Probability(15)) {
-					//TODO
-				}
-				else {
-					//TODO
-				}
-			}
-			else if (position == 2) {
-				if (rand.Probability(4)) {
-					//TODO
-				}
-				else if (rand.Probability(4)) {
-					//TODO
-				}
-				else {
-					//TODO
-				}
-			}
-			else if (position == 1) {
+			if (power_hand == 4) {
+				//TODO
+				if (players[i].get_Bet() < max_bet) {
+					if (rand.Probability(45)) {
+						Call(i);
+					}
+					else if (rand.Probability(50)) {
+						std::uint8_t multiply = rand.getRandomNumber(2, 4);
 
+						if (players[i].get_Balance() >= max_bet * multiply) {
+							Raise(i, multiply);
+						} else {
+							Call(i);
+						}
+					}
+					else {
+						Fold(i);
+					}
+				}
+				else {
+					if (rand.Probability(35)) {
+						Check(i);
+					}
+					else if (rand.Probability(60)) {
+						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+
+						if (players[i].get_Balance() >= max_bet * multiply) {
+							Raise(i, multiply);
+						}
+						else {
+							Check(i);
+						}
+					}
+					else {
+						Fold(i);
+					}
+				}
 			}
+
+			else if (power_hand == 3) {
+				//TODO
+				if (players[i].get_Bet() < max_bet) {
+					if (rand.Probability(60)) {
+						Call(i);
+					}
+					else if (rand.Probability(30)) {
+						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+
+						if (players[i].get_Balance() >= max_bet * multiply) {
+							Raise(i, multiply);
+						}
+						else {
+							Call(i);
+						}
+					}
+					else {
+						Fold(i);
+					}
+				}
+				else {
+					//TODO
+					if (rand.Probability(70)) {
+						Check(i);
+					}
+					else if (rand.Probability(25)) {
+						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+
+						if (players[i].get_Balance() >= max_bet * multiply) {
+							Raise(i, multiply);
+						}
+						else {
+							Check(i);
+						}
+					}
+					else {
+						Fold(i);
+					}
+				}
+			}
+
+			else if (power_hand == 2) {
+				//TODO
+				if (players[i].get_Bet() < max_bet) {
+					if (rand.Probability(65)) {
+						Call(i);
+					}
+					else if (rand.Probability(30)) {
+						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+
+						if (players[i].get_Balance() >= max_bet * multiply) {
+							Raise(i, multiply);
+						}
+						else {
+							Call(i);
+						}
+					}
+					else {
+						Fold(i);
+					}
+				}
+				else {
+					//TODO
+					if (players[i].get_Bet() < max_bet) {
+						if (rand.Probability(70)) {
+							Check(i);
+						}
+						else if (rand.Probability(25)) {
+							std::uint8_t multiply = rand.getRandomNumber(2, 4);
+
+							if (players[i].get_Balance() >= max_bet * multiply) {
+								Raise(i, multiply);
+							}
+							else {
+								Check(i);
+							}
+						}
+						else {
+							Fold(i);
+						}
+					}
+				}
+			}
+
+			else if (power_hand == 1) {
+				//TODO
+				if (players[i].get_Bet() < max_bet) {
+					if (rand.Probability(70)) {
+						Call(i);
+					}
+					else if (rand.Probability(5)) {
+						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+
+						if (players[i].get_Balance() >= max_bet * multiply) {
+							Raise(i, multiply);
+						}
+						else {
+							Call(i);
+						}
+					}
+					else {
+						Fold(i);
+					}
+				}
+				else {
+					//TODO
+					if (players[i].get_Bet() < max_bet) {
+						if (rand.Probability(70)) {
+							Check(i);
+						}
+						else if (rand.Probability(10)) {
+							std::uint8_t multiply = rand.getRandomNumber(2, 4);
+
+							if (players[i].get_Balance() >= max_bet * multiply) {
+								Raise(i, multiply);
+							}
+							else {
+								Check(i);
+							}
+						}
+						else {
+							Fold(i);
+						}
+					}
+				}
+			}
+
 			else {
+				//TODO
+				if (players[i].get_Bet() < max_bet) {
+					if (rand.Probability(10)) {
+						Call(i);
+					}
+					else if (rand.Probability(5)) {
+						std::uint8_t multiply = rand.getRandomNumber(2, 4);
 
+						if (players[i].get_Balance() >= max_bet * multiply) {
+							Raise(i, multiply);
+						}
+						else {
+							Call(i);
+						}
+					}
+					else {
+						Fold(i);
+					}
+				}
+				else {
+					//TODO
+					if (rand.Probability(20)) {
+						Check(i);
+					}
+					else if (rand.Probability(5)) {
+						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+
+						if (players[i].get_Balance() >= max_bet * multiply) {
+							Raise(i, multiply);
+						}
+						else {
+							Check(i);
+						}
+					}
+					else {
+						Fold(i);
+					}
+				}
 			}
 		}
+
 		else if (players[i].get_Valid_in_round() && players[i].get_Valid_in_game()) {
 			std::cout << "Choice you move: " << '\n';
-			while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space));
+			while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Q));
 			//TODO
 		}
 
-		i = (i + 1) % count_players;
 	}
 	//TODO
 }
@@ -204,9 +426,11 @@ void ConsolePokerGame::Run() {
 	InitializationPlayers(5000);
 	while (players.size() > 1) {
 		Preflop();
-		Flop();
-		Tern();
-		River();
+		if (!end_game_on_preflop) {
+			Flop();
+			Tern();
+			River();
+		}
 	}
 	//TODO
 }

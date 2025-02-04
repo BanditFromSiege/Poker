@@ -143,27 +143,27 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ConsoleRender\ConsolePokerGame.cpp" />
-    <ClCompile Include="PokerLogic\Player.cpp" />
-    <ClCompile Include="PokerLogic\SixCardCombination.cpp" />
+    <ClCompile Include="PokerLogic\CardLogic\Hand_of_cards.cpp" />
+    <ClCompile Include="PokerLogic\Enums.cpp" />
+    <ClCompile Include="PokerLogic\PlayerLogic\Player.cpp" />
     <ClCompile Include="ToolsClasses\RandomGenerator.cpp" />
     <ClCompile Include="Tests.cpp" />
     <ClCompile Include="WindowRender\PokerGame.cpp" />
-    <ClCompile Include="PokerLogic\Card.cpp" />
-    <ClCompile Include="PokerLogic\FiveCardCombination.cpp" />
-    <ClCompile Include="PokerLogic\SevenCardCombination.cpp" />
+    <ClCompile Include="PokerLogic\CardLogic\Card.cpp" />
+    <ClCompile Include="PokerLogic\CombinationLogic\CardCombination.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="ToolsClasses\Stopwatch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConsoleRender\ConsolePokerGame.h" />
+    <ClInclude Include="PokerLogic\CardLogic\Hand_of_cards.h" />
+    <ClInclude Include="PokerLogic\Enums.h" />
     <ClInclude Include="Headers.h" />
-    <ClInclude Include="PokerLogic\Player.h" />
-    <ClInclude Include="PokerLogic\SixCardCombination.h" />
+    <ClInclude Include="PokerLogic\PlayerLogic\Player.h" />
     <ClInclude Include="ToolsClasses\RandomGenerator.h" />
     <ClInclude Include="WindowRender\PokerGame.h" />
-    <ClInclude Include="PokerLogic\Card.h" />
-    <ClInclude Include="PokerLogic\FiveCardCombination.h" />
-    <ClInclude Include="PokerLogic\SevenCardCombination.h" />
+    <ClInclude Include="PokerLogic\CardLogic\Card.h" />
+    <ClInclude Include="PokerLogic\CombinationLogic\CardCombination.h" />
     <ClInclude Include="ToolsClasses\Stopwatch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

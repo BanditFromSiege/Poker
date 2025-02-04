@@ -8,7 +8,6 @@
 #include <unordered_set>
 #include <array>
 
-#include <utility>
 #include <chrono>
 #include <algorithm>
 #include <memory>

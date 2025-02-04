@@ -21,7 +21,7 @@ namespace Tests {
 			}
 			std::cout << '\n';
 
-			FiveCardCombination combination(vector_of_cards);
+			CardCombination combination(vector_of_cards);
 			combination.ShowCombination();
 			std::cout << '\n';
 		}
@@ -42,7 +42,7 @@ namespace Tests {
 		std::random_device random_device;
 		auto ptr_to_rand_engine = std::make_unique<std::mt19937>(random_device());
 
-		FiveCardCombination hand;
+		CardCombination hand;
 		std::vector<Card> cards_of_combinations;
 		cards_of_combinations.reserve(5);
 
@@ -54,7 +54,7 @@ namespace Tests {
 				cards_of_combinations.push_back(cards[j]);
 			}
 
-			FiveCardCombination temp(cards_of_combinations);
+			CardCombination temp(cards_of_combinations);
 			hand = std::move(temp);
 			++un_map_of_combinations[hand.getPower()];
 
@@ -87,7 +87,7 @@ namespace Tests {
 		std::random_device g;
 		auto pr = std::make_unique<std::mt19937>(g());
 
-		SevenCardCombination hand;
+		CardCombination hand;
 		std::vector<Card> cards_of_combinations;
 		cards_of_combinations.reserve(7);
 
@@ -99,10 +99,24 @@ namespace Tests {
 				cards_of_combinations.push_back(cards[j]);
 			}
 
-			SevenCardCombination temp(cards_of_combinations);
+			CardCombination temp(cards_of_combinations);
 			hand = std::move(temp);
 			++un_map_of_combinations[hand.getPower()];
-
+			/*
+			if (hand.getPower() == Poker::Combination::Royal_flush) {
+				std::cout << "Table cards: ";
+				for (std::uint8_t i = 0; i < 5; ++i) {
+					std::cout << cards_of_combinations[i] << ' ';
+				}
+				std::cout << '\n' << "Hand cards: ";
+				for (std::uint8_t i = 5; i < 7; ++i) {
+					std::cout << cards_of_combinations[i] << ' ';
+				}
+				std::cout << '\n';
+				hand.ShowCombination();
+				std::cout << '\n';
+			}
+			*/
 			cards_of_combinations.clear();
 		}
 
@@ -167,7 +181,7 @@ namespace Tests {
 
 	void unit_tests_five_card() {
 		auto run_test = [](const char* player, const char* opponent, Poker::Result outcome) -> bool {
-			return Poker::compare_combinations(FiveCardCombination(player), FiveCardCombination(opponent)) == outcome;
+			return Poker::compare_combinations(CardCombination(player), CardCombination(opponent)) == outcome;
 		};
 
 		assert(run_test("2H 3H 4H 5H 6H", "KS AS TS QS JS", Poker::Result::Loss));
@@ -199,7 +213,7 @@ namespace Tests {
 
 	void unit_tests_six_card() {
 		auto run_test = [](const char* player, const char* opponent, Poker::Result outcome) -> bool {
-			return Poker::compare_combinations(SixCardCombination(player), SixCardCombination(opponent)) == outcome;
+			return Poker::compare_combinations(CardCombination(player), CardCombination(opponent)) == outcome;
 		};
 
 		assert(run_test("8S 3S TC 7H AH KS", "8S 3S TC 7H QC TH", Poker::Result::Loss));
@@ -216,7 +230,7 @@ namespace Tests {
 
 	void unit_tests_seven_card() {
 		auto run_test = [](const char* player, const char* opponent, Poker::Result outcome) -> bool {
-			return Poker::compare_combinations(SevenCardCombination(player), SevenCardCombination(opponent)) == outcome;
+			return Poker::compare_combinations(CardCombination(player), CardCombination(opponent)) == outcome;
 		};
 
 		assert(run_test("8S 3S TC 7H AH KS TD", "8S 3S TC 7H AH QC TH", Poker::Result::Win));
@@ -238,19 +252,19 @@ namespace Tests {
 		Stopwatch<seconds> a; 
 		Stopwatch<seconds> b;
 		a.SetBeginPoint();
-		test_distribution_of_five_comb_cards(10000);
+		test_distribution_of_five_comb_cards(1000000);
 		a.SetEndPoint();
 
 		a.ShowTime();
 		std::cout << '\n';
 
 		b.SetBeginPoint();
-		test_distribution_of_seven_comb_cards(10000);
+		test_distribution_of_seven_comb_cards(1000000);
 		b.SetEndPoint();
 
 		b.ShowTime();
 		*/
-
+		
 		//test_of_stopwatch();
 		//test_wallpapper();
 
