@@ -13,7 +13,7 @@ public:
 
 	template <typename T>
 	requires std::is_integral_v<T>
-	T getRandomNumber(T a, T b) const {
+	T GetRandomNumber(T a, T b) const {
 		std::uniform_int_distribution<T> r(a, b);
 		return r(*engine);
 	}

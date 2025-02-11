@@ -20,19 +20,10 @@ bool operator==(Hand_of_cards hand1, Hand_of_cards hand2) {
 }
 
 namespace Tools {
-	std::uint8_t get_power_hand(const Type_of_hands& type, Hand_of_cards hand) {
-		if (type.premium.set.contains(hand)) {
-			return 4;
-		}
-		else if (type.high.set.contains(hand)) {
-			return 3;
-		}
-		else if (type.medium.set.contains(hand)) {
-			return 2;
-		}
-		else if (type.low.set.contains(hand)) {
-			return 1;
-		}
-		return 0;
+	std::uint8_t Get_hand_category(const Type_of_hands& type, Hand_of_cards hand) {
+		return (type.premium.set.contains(hand) * 4
+			+ type.high.set.contains(hand) * 3
+			+ type.medium.set.contains(hand) * 2
+			+ type.low.set.contains(hand) * 1);
 	}
 };

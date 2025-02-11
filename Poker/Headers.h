@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <array>
+#include <span>
 
 #include <chrono>
 #include <algorithm>

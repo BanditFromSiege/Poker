@@ -27,7 +27,7 @@ void ConsolePokerGame::InitializationHands() {
 		{'9','C'}, {'T','C'}, {'J','C'}, {'Q','C'}, {'K','C'}, {'A','C'}
 	};
 
-	rand.Shuffle(cards);
+	random.Shuffle(cards);
 
 	std::uint8_t count = 0;
 	for (std::uint8_t i = 0; i < count_players; ++i) {
@@ -49,7 +49,7 @@ void ConsolePokerGame::InitializationHands() {
 			}
 		}
 
-		rand.Shuffle(index_of_valid_players);
+		random.Shuffle(index_of_valid_players);
 		position_dealer = index_of_valid_players.front();
 	}
 	else {
@@ -59,7 +59,7 @@ void ConsolePokerGame::InitializationHands() {
 	bigBlind = bigBlind * ((++round_count / 5) + 1);
 }
 
-bool ConsolePokerGame::everyone_did_bet() {
+bool ConsolePokerGame::Everyone_did_bet() {
 	bool result = true;
 	for (auto& player : players) {
 		if (player.get_Valid_in_round()) {
@@ -69,7 +69,7 @@ bool ConsolePokerGame::everyone_did_bet() {
 	return result;
 }
 
-std::uint8_t ConsolePokerGame::players_in_round() {
+std::uint8_t ConsolePokerGame::Players_in_round() {
 	std::uint8_t count = 0;
 	for (auto& player : players) {
 		count += player.get_Valid_in_round();
@@ -151,7 +151,7 @@ void ConsolePokerGame::Preflop() {
 		std::cout << '\n';
 		
 		//TODO
-		auto count = players_in_round();
+		auto count = Players_in_round();
 
 		if (count == 1 && i != position_player) {
 			std::cout << "Player number " << i << "won" << '\n';
@@ -174,7 +174,7 @@ void ConsolePokerGame::Preflop() {
 			//TODO
 		}
 
-		if (i == index_big_blind && everyone_did_bet()) {
+		if (i == index_big_blind && Everyone_did_bet()) {
 			std::cout << "Go to flop" << "\n";
 			std::cout << "Press SPACE to continue..." << '\n';
 			while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space));
@@ -189,16 +189,16 @@ void ConsolePokerGame::Preflop() {
 			Delay<milliseconds>(500);
 
 			Hand_of_cards hand({ players[i].get_First(), players[i].get_Second() });
-			std::uint8_t power_hand = get_power_hand(*ptr_to_type_of_hands, hand);
+			std::uint8_t power_hand = Get_hand_category(*ptr_to_type_of_hands, hand);
 
 			if (power_hand == 4) {
 				//TODO
 				if (players[i].get_Bet() < max_bet) {
-					if (rand.Probability(45)) {
+					if (random.Probability(45)) {
 						Call(i);
 					}
-					else if (rand.Probability(50)) {
-						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+					else if (random.Probability(50)) {
+						std::uint8_t multiply = random.GetRandomNumber(2, 4);
 
 						if (players[i].get_Balance() >= max_bet * multiply) {
 							Raise(i, multiply);
@@ -211,11 +211,11 @@ void ConsolePokerGame::Preflop() {
 					}
 				}
 				else {
-					if (rand.Probability(35)) {
+					if (random.Probability(35)) {
 						Check(i);
 					}
-					else if (rand.Probability(60)) {
-						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+					else if (random.Probability(60)) {
+						std::uint8_t multiply = random.GetRandomNumber(2, 4);
 
 						if (players[i].get_Balance() >= max_bet * multiply) {
 							Raise(i, multiply);
@@ -233,11 +233,11 @@ void ConsolePokerGame::Preflop() {
 			else if (power_hand == 3) {
 				//TODO
 				if (players[i].get_Bet() < max_bet) {
-					if (rand.Probability(60)) {
+					if (random.Probability(60)) {
 						Call(i);
 					}
-					else if (rand.Probability(30)) {
-						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+					else if (random.Probability(30)) {
+						std::uint8_t multiply = random.GetRandomNumber(2, 4);
 
 						if (players[i].get_Balance() >= max_bet * multiply) {
 							Raise(i, multiply);
@@ -252,11 +252,11 @@ void ConsolePokerGame::Preflop() {
 				}
 				else {
 					//TODO
-					if (rand.Probability(70)) {
+					if (random.Probability(70)) {
 						Check(i);
 					}
-					else if (rand.Probability(25)) {
-						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+					else if (random.Probability(25)) {
+						std::uint8_t multiply = random.GetRandomNumber(2, 4);
 
 						if (players[i].get_Balance() >= max_bet * multiply) {
 							Raise(i, multiply);
@@ -274,11 +274,11 @@ void ConsolePokerGame::Preflop() {
 			else if (power_hand == 2) {
 				//TODO
 				if (players[i].get_Bet() < max_bet) {
-					if (rand.Probability(65)) {
+					if (random.Probability(65)) {
 						Call(i);
 					}
-					else if (rand.Probability(30)) {
-						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+					else if (random.Probability(30)) {
+						std::uint8_t multiply = random.GetRandomNumber(2, 4);
 
 						if (players[i].get_Balance() >= max_bet * multiply) {
 							Raise(i, multiply);
@@ -294,11 +294,11 @@ void ConsolePokerGame::Preflop() {
 				else {
 					//TODO
 					if (players[i].get_Bet() < max_bet) {
-						if (rand.Probability(70)) {
+						if (random.Probability(70)) {
 							Check(i);
 						}
-						else if (rand.Probability(25)) {
-							std::uint8_t multiply = rand.getRandomNumber(2, 4);
+						else if (random.Probability(25)) {
+							std::uint8_t multiply = random.GetRandomNumber(2, 4);
 
 							if (players[i].get_Balance() >= max_bet * multiply) {
 								Raise(i, multiply);
@@ -317,11 +317,11 @@ void ConsolePokerGame::Preflop() {
 			else if (power_hand == 1) {
 				//TODO
 				if (players[i].get_Bet() < max_bet) {
-					if (rand.Probability(70)) {
+					if (random.Probability(70)) {
 						Call(i);
 					}
-					else if (rand.Probability(5)) {
-						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+					else if (random.Probability(5)) {
+						std::uint8_t multiply = random.GetRandomNumber(2, 4);
 
 						if (players[i].get_Balance() >= max_bet * multiply) {
 							Raise(i, multiply);
@@ -337,11 +337,11 @@ void ConsolePokerGame::Preflop() {
 				else {
 					//TODO
 					if (players[i].get_Bet() < max_bet) {
-						if (rand.Probability(70)) {
+						if (random.Probability(70)) {
 							Check(i);
 						}
-						else if (rand.Probability(10)) {
-							std::uint8_t multiply = rand.getRandomNumber(2, 4);
+						else if (random.Probability(10)) {
+							std::uint8_t multiply = random.GetRandomNumber(2, 4);
 
 							if (players[i].get_Balance() >= max_bet * multiply) {
 								Raise(i, multiply);
@@ -360,11 +360,11 @@ void ConsolePokerGame::Preflop() {
 			else {
 				//TODO
 				if (players[i].get_Bet() < max_bet) {
-					if (rand.Probability(10)) {
+					if (random.Probability(10)) {
 						Call(i);
 					}
-					else if (rand.Probability(5)) {
-						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+					else if (random.Probability(5)) {
+						std::uint8_t multiply = random.GetRandomNumber(2, 4);
 
 						if (players[i].get_Balance() >= max_bet * multiply) {
 							Raise(i, multiply);
@@ -379,11 +379,11 @@ void ConsolePokerGame::Preflop() {
 				}
 				else {
 					//TODO
-					if (rand.Probability(20)) {
+					if (random.Probability(20)) {
 						Check(i);
 					}
-					else if (rand.Probability(5)) {
-						std::uint8_t multiply = rand.getRandomNumber(2, 4);
+					else if (random.Probability(5)) {
+						std::uint8_t multiply = random.GetRandomNumber(2, 4);
 
 						if (players[i].get_Balance() >= max_bet * multiply) {
 							Raise(i, multiply);

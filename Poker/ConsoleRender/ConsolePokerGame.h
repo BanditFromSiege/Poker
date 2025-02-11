@@ -8,7 +8,7 @@ private:
 	std::vector<Player> players = {};
 	std::vector<Card> table = {};
 
-	RandomGenerator rand;
+	RandomGenerator random;
 
 	std::uint32_t pot = 0;
 	std::uint32_t rounds = 1;
@@ -20,7 +20,7 @@ private:
 
 	std::uint8_t count_players = 6;
 	std::uint8_t position_dealer = 0;
-	std::uint8_t position_player = rand.getRandomNumber(0, count_players - 1);
+	std::uint8_t position_player = random.GetRandomNumber(0, count_players - 1);
 
 	std::unique_ptr<Tools::Type_of_hands> ptr_to_type_of_hands
 		= std::make_unique<Tools::Type_of_hands>();
@@ -30,8 +30,8 @@ private:
 	void InitializationPlayers(std::uint16_t balance);
 	void InitializationHands();
 
-	bool everyone_did_bet();
-	std::uint8_t players_in_round();
+	bool Everyone_did_bet();
+	std::uint8_t Players_in_round();
 
 	void Check(std::uint8_t i);
 	void Call(std::uint8_t i);

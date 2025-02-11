@@ -1,7 +1,7 @@
 #include "ConsoleRender/ConsolePokerGame.h"
 
 namespace Tests {
-	void test_check_combination_of_cards() {
+	void Test_check_combination_of_cards() {
 		std::vector<std::vector<Card>> cards = {
 			{ {'Q','S'},{'J','C'},{'3','D'},{'5','H'},{'8','D'} },
 			{ {'A','D'},{'A','H'},{'6','D'},{'7','S'},{'J','S'} },
@@ -15,19 +15,19 @@ namespace Tests {
 			{ {'A','D'},{'K','D'},{'Q','D'},{'J','D'},{'T','D'} }
 		};
 
-		for (const auto& vector_of_cards : cards) {
+		for (std::vector<Card>& vector_of_cards : cards) {
 			for (Card c : vector_of_cards) {
 				std::cout << c << ' ';
 			}
 			std::cout << '\n';
 
-			CardCombination combination(vector_of_cards);
+			CardCombination combination = { vector_of_cards };
 			combination.ShowCombination();
 			std::cout << '\n';
 		}
 	}
 
-	void test_distribution_of_five_comb_cards(int number_of_ñard_shuffles) {
+	void Test_distribution_of_five_comb_cards(int number_of_ñard_shuffles) {
 		std::vector<Card> cards = {
 			{'2','S'}, {'3','S'}, {'4','S'}, {'5','S'}, {'6','S'}, {'7','S'}, {'8','S'},
 			{'9','S'}, {'T','S'}, {'J','S'}, {'Q','S'}, {'K','S'}, {'A','S'},
@@ -56,7 +56,7 @@ namespace Tests {
 
 			CardCombination temp(cards_of_combinations);
 			hand = std::move(temp);
-			++un_map_of_combinations[hand.getPower()];
+			++un_map_of_combinations[hand.GetPower()];
 
 			cards_of_combinations.clear();
 		}
@@ -72,7 +72,7 @@ namespace Tests {
 		std::cout << '\n';
 	}
 
-	void test_distribution_of_seven_comb_cards(int number_of_ñard_shuffles) {
+	void Test_distribution_of_seven_comb_cards(int number_of_ñard_shuffles) {
 		std::vector<Card> cards = {
 			{'2','S'}, {'3','S'}, {'4','S'}, {'5','S'}, {'6','S'}, {'7','S'}, {'8','S'},
 			{'9','S'}, {'T','S'}, {'J','S'}, {'Q','S'}, {'K','S'}, {'A','S'},
@@ -101,9 +101,9 @@ namespace Tests {
 
 			CardCombination temp(cards_of_combinations);
 			hand = std::move(temp);
-			++un_map_of_combinations[hand.getPower()];
+			++un_map_of_combinations[hand.GetPower()];
 			/*
-			if (hand.getPower() == Poker::Combination::Royal_flush) {
+			if (hand.getPower() >= Poker::Combination::Care) {
 				std::cout << "Table cards: ";
 				for (std::uint8_t i = 0; i < 5; ++i) {
 					std::cout << cards_of_combinations[i] << ' ';
@@ -131,7 +131,7 @@ namespace Tests {
 		std::cout << '\n';
 	}
 
-	void test_of_stopwatch() {
+	void Test_of_stopwatch() {
 		Stopwatch stopwatch;
 		std::size_t mid = 0;
 		std::size_t diff = 0;
@@ -156,7 +156,7 @@ namespace Tests {
 		stopwatch.ShowType();
 	}
 
-	void test_wallpapper() {
+	void Test_wallpapper() {
 		sf::Texture wallpapper;
 		wallpapper.loadFromFile("Textures\\TableNew.png");
 
@@ -179,7 +179,7 @@ namespace Tests {
 		}
 	}
 
-	void unit_tests_five_card() {
+	void Unit_tests_five_card() {
 		auto run_test = [](const char* player, const char* opponent, Poker::Result outcome) -> bool {
 			return Poker::compare_combinations(CardCombination(player), CardCombination(opponent)) == outcome;
 		};
@@ -209,9 +209,12 @@ namespace Tests {
 		assert(run_test("AH 2S 3S 4H KS", "9D TC JC QD KD", Poker::Result::Loss));
 
 		assert(run_test("AH AS 2D 7S 9S", "AD AH 2H 7C 9C", Poker::Result::Draw));
+
+		assert(run_test("AH TD 9H AS 9H", "AH KD 5H AS 5H", Poker::Result::Win));
+		assert(run_test("AH 9D 9H AS 9H", "AH 5D 5H AS 5H", Poker::Result::Win));
 	}
 
-	void unit_tests_six_card() {
+	void Unit_tests_six_card() {
 		auto run_test = [](const char* player, const char* opponent, Poker::Result outcome) -> bool {
 			return Poker::compare_combinations(CardCombination(player), CardCombination(opponent)) == outcome;
 		};
@@ -228,7 +231,7 @@ namespace Tests {
 		assert(run_test("6S 3S AC KH QS 7D", "6S 3S AC KH JH TC", Poker::Result::Win));
 	}
 
-	void unit_tests_seven_card() {
+	void Unit_tests_seven_card() {
 		auto run_test = [](const char* player, const char* opponent, Poker::Result outcome) -> bool {
 			return Poker::compare_combinations(CardCombination(player), CardCombination(opponent)) == outcome;
 		};
@@ -249,27 +252,27 @@ namespace Tests {
 		//test_check_combination_of_cards();
 
 		/*
-		Stopwatch<seconds> a; 
+		Stopwatch<seconds> a;
 		Stopwatch<seconds> b;
 		a.SetBeginPoint();
-		test_distribution_of_five_comb_cards(1000000);
+		Test_distribution_of_five_comb_cards(1000000);
 		a.SetEndPoint();
 
 		a.ShowTime();
 		std::cout << '\n';
-
+		
 		b.SetBeginPoint();
-		test_distribution_of_seven_comb_cards(1000000);
+		Test_distribution_of_seven_comb_cards(1000000);
 		b.SetEndPoint();
 
 		b.ShowTime();
 		*/
-		
+
 		//test_of_stopwatch();
 		//test_wallpapper();
 
-		unit_tests_five_card();
-		unit_tests_six_card();
-		unit_tests_seven_card();
+		Unit_tests_five_card();
+		Unit_tests_six_card();
+		Unit_tests_seven_card();
 	}
 }

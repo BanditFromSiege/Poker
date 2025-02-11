@@ -69,5 +69,5 @@ namespace Tools {
 		Low_hands low;
 	};
 
-	std::uint8_t get_power_hand(const Type_of_hands& check, Hand_of_cards hand);
+	std::uint8_t Get_hand_category(const Type_of_hands& check, Hand_of_cards hand);
 }
