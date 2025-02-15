@@ -618,8 +618,8 @@ namespace Poker {
 				float probability_tern_or_river = 0.0f;
 
 				if (max_flush_series == 4) {
-					probability_tern = (5.0f * 2.0f) / count_all_cards_tern;
-					probability_river = (6.0f * 2.0f) / count_all_cards_river;
+					probability_tern = 14.0f / count_all_cards_tern;
+					probability_river = 16.0f / count_all_cards_river;
 				}
 				else {
 					probability_tern = (5.0f * 3.0f) / count_all_cards_tern;
@@ -639,8 +639,8 @@ namespace Poker {
 
 				if (current_power == Poker::Combination::Pair) {
 					if (max_flush_series == 4) {
-						probability_tern = (3.0f * 2.0f) / count_all_cards_tern;
-						probability_river = (4.0f * 2.0f) / count_all_cards_river;
+						probability_tern = 9.0f / count_all_cards_tern;
+						probability_river = 11.0f / count_all_cards_river;
 					}
 					else {
 						probability_tern = (3.0f * 3.0f) / count_all_cards_tern;
@@ -650,8 +650,11 @@ namespace Poker {
 					probability_tern_or_river = probability_tern + probability_river;
 				}
 				else if (current_power == Poker::Combination::High_card) {
-					if (max_flush_series >= 3) {
-						probability_river = ((5.0f * 2.0f) / count_all_cards_tern) * ((4.0f * 2.0f) / count_all_cards_river);
+					if (max_flush_series == 4) {
+						probability_river = (14.0f / count_all_cards_tern) * (12.0f / count_all_cards_river);
+					}
+					else if (max_flush_series == 3) {
+						probability_river = (13.0f / count_all_cards_tern) * (11.0f / count_all_cards_river);
 					}
 					else {
 						probability_river = ((5.0f * 3.0f) / count_all_cards_tern) * ((4.0f * 3.0f) / count_all_cards_river);
@@ -670,20 +673,14 @@ namespace Poker {
 				//Two pair: Nothing
 
 				if (current_power == Poker::Combination::Pair) {
-					if (max_flush_series == 4) {
-						probability_tern = 1.0f / count_all_cards_tern;
-						probability_river = 1.0f / count_all_cards_river;
-					}
-					else {
-						probability_tern = 2.0f / count_all_cards_tern;
-						probability_river = 2.0f / count_all_cards_river;
-					}
+					probability_tern = 2.0f / count_all_cards_tern;
+					probability_river = 2.0f / count_all_cards_river;
 					
 					probability_tern_or_river = probability_tern + probability_river;
 				}
 				else if (current_power == Poker::Combination::High_card) {
-					if (max_flush_series >= 3) {
-						probability_river = ((5.0f * 2.0f) / count_all_cards_tern) * (1.0f / count_all_cards_river);
+					if (max_flush_series == 4) {
+						probability_river = (14.0f / count_all_cards_tern) * (2.0f / count_all_cards_river);
 					}
 					else {
 						probability_river = ((5.0f * 3.0f) / count_all_cards_tern) * (2.0f / count_all_cards_river);
@@ -819,12 +816,9 @@ namespace Poker {
 
 				//Flush, Straight, High_card - Nothing
 
-				if (current_power == Poker::Combination::Full_house) {
-					probability_tern = 1.0f / count_all_cards_tern;
-					probability_river = 1.0f / count_all_cards_river;
-					probability_tern_or_river = probability_tern + probability_river;
-				}
-				else if (current_power == Poker::Combination::Set) {
+				if (current_power == Poker::Combination::Full_house
+					|| current_power == Poker::Combination::Set)
+				{
 					probability_tern = 1.0f / count_all_cards_tern;
 					probability_river = 1.0f / count_all_cards_river;
 					probability_tern_or_river = probability_tern + probability_river;
