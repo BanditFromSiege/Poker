@@ -248,7 +248,7 @@ namespace Tests {
 		assert(run_test("6S 3S AC KH 9H QS 7D", "6S 3S AC KH 9H JH TC", Poker::Result::Win));
 	}
 
-	void Test_distribution_probabilty(int number_of_ñard_shuffles = 5) {
+	void Test_distribution_probabilty(int number_of_ñard_shuffles = 5, bool show = true) {
 		std::vector<Card> cards = {
 			{'2','S'}, {'3','S'}, {'4','S'}, {'5','S'}, {'6','S'}, {'7','S'}, {'8','S'},
 			{'9','S'}, {'T','S'}, {'J','S'}, {'Q','S'}, {'K','S'}, {'A','S'},
@@ -274,16 +274,15 @@ namespace Tests {
 			}
 
 			CardCombination comb(cards_of_combinations);
+			auto array_of_probability = Poker::Find_Probability(cards_of_combinations);
 
-			if (comb.GetPower() == Poker::Combination::Flush) {
+			if (show && comb.GetPower() >= Poker::Combination::High_card) {
 				for (Card c : cards_of_combinations) {
 					std::cout << c << ' ';
 				}
 				std::cout << '\n';
 				comb.ShowCombination();
 				std::cout << '\n';
-
-				auto array_of_probability = Poker::Find_Probability(cards_of_combinations);
 
 				std::cout << "Tern" << '\t' << " River" << '\t' << " Tern or River" << '\t' << " Combination" << '\n' << '\n';
 				for (auto [x, y, z, c] : array_of_probability) {
@@ -488,6 +487,6 @@ namespace Tests {
 		Unit_tests_seven_card();
 
 		Test_combination_predictor();
-		//Test_distribution_probabilty(100);
+		//Test_distribution_probabilty(10);
 	}
 }

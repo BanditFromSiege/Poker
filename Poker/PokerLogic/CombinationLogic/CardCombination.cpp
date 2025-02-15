@@ -605,6 +605,64 @@ namespace Poker {
 				&& (pair_1.second == pair_2.first) || (pair_1.second == pair_2.second));
 		};
 
+		std::sort(straight_outs.first.begin(), straight_outs.first.end(), 
+			[](char first, char second) {
+				return Tools::cards(first) < Tools::cards(second);
+			}
+		);
+
+		std::sort(straight_flush_outs.first.begin(), straight_flush_outs.first.end(),
+			[](char first, char second) {
+				return Tools::cards(first) < Tools::cards(second);
+			}
+		);
+
+		std::vector<char> matching_one_card;
+		std::set_intersection(
+			straight_outs.first.begin(),
+			straight_outs.first.end(),
+			straight_flush_outs.first.begin(),
+			straight_flush_outs.first.end(),
+			std::back_inserter(matching_one_card),
+			[](char card_from_straight, char card_from_straight_flush) {
+				return Tools::cards(card_from_straight) < Tools::cards(card_from_straight_flush);
+			}
+		);
+
+		std::uint8_t count_matching_one_card = matching_one_card.size();
+		
+		std::sort(straight_outs.second.begin(), straight_outs.second.end(),
+			[](std::pair<char, char> pair1 , std::pair<char, char> pair2) {
+				if (Tools::cards(pair1.first) == Tools::cards(pair2.first)) {
+					return Tools::cards(pair1.second) < Tools::cards(pair2.second);
+				}
+				return Tools::cards(pair1.first) < Tools::cards(pair2.first);
+			}
+		);
+
+		std::sort(straight_flush_outs.second.begin(), straight_flush_outs.second.end(),
+			[](std::pair<char, char> pair1, std::pair<char, char> pair2) {
+				if (Tools::cards(pair1.first) == Tools::cards(pair2.first)) {
+					return Tools::cards(pair1.second) < Tools::cards(pair2.second);
+				}
+				return Tools::cards(pair1.first) < Tools::cards(pair2.first);
+			}
+		);
+
+		auto find_mathing_two_cards = []
+			(const std::vector<std::pair<char, char>> vec1, const std::vector<std::pair<char, char>> vec2) 
+		{
+			std::uint8_t count_mathing = 0;
+			for (std::uint8_t i = 0; i < std::min(vec1.size(), vec2.size()); ++i) {
+				count_mathing += (vec1[i].first == vec2[i].first || vec1[i].first == vec2[i].second)
+					&& (vec1[i].second == vec2[i].second || vec1[i].second == vec2[i].first);
+			}
+
+			return count_mathing;
+		};
+
+		std::uint8_t count_matching_two_card = find_mathing_two_cards(straight_outs.second, straight_flush_outs.second);
+			
 		constexpr float count_all_cards_tern = 47.0f;
 		constexpr float count_all_cards_river = 46.0f;
 
@@ -696,56 +754,36 @@ namespace Poker {
 				float probability_river = 0.0f;
 				float probability_tern_or_river = 0.0f;
 
-				bool filtered_one = false;
-				bool filtered_two = false;
-
-				if (straight_one_need_cards != 0) {
-					if (!straight_outs.first.empty() && !straight_flush_outs.first.empty()) {
-						if (((straight_outs.first[0] == straight_flush_outs.first[0])
-							|| (straight_outs.first[0] == straight_flush_outs.first[1])) ||
-							(straight_outs.first[1] == straight_flush_outs.first[0])
-							|| (straight_outs.first[1] == straight_flush_outs.first[1]))
-						{
-							filtered_one = true;
-						}
-					}
-				}
-				else if (straight_two_need_cards != 0) {
-					if (!straight_outs.second.empty() && !straight_flush_outs.second.empty()) {
-						if (((compare_pair(straight_outs.second[0], straight_flush_outs.second[0]))
-							|| (compare_pair(straight_outs.second[0], straight_flush_outs.second[1]))) ||
-							((compare_pair(straight_outs.second[1], straight_flush_outs.second[0]))
-								|| (compare_pair(straight_outs.second[1], straight_flush_outs.second[1]))))
-						{
-							filtered_two = true;
-						}
-					}
-				}
-
 				if (player_cards.size() >= 3) {
 					if (straight_one_need_cards == 0) {
-						float prob_two_cards = 0.0f;
+						constexpr float prob_two_cards_without_mathing 
+							= 2.0f * ((4.0f / count_all_cards_tern) * (4.0f / count_all_cards_river));
 
-						if (max_flush_series >= 3 || filtered_two) {
-							prob_two_cards = 2.0f * ((3.0f / count_all_cards_tern) * (3.0f / count_all_cards_river));
+						constexpr float prob_two_cards_with_mathing
+							= 2.0f * ((3.0f / count_all_cards_tern) * (3.0f / count_all_cards_river));
+
+						if (max_flush_series >= 3) {
+							probability_river = straight_two_need_cards * prob_two_cards_with_mathing;
 						}
 						else {
-							prob_two_cards = 2.0f * ((4.0f / count_all_cards_tern) * (4.0f / count_all_cards_river));
+							probability_river = ((straight_two_need_cards - count_matching_two_card)
+								* prob_two_cards_without_mathing) + (count_matching_two_card * prob_two_cards_with_mathing);
 						}
-
-						probability_river = straight_two_need_cards * prob_two_cards;
 					}
 					else {
 						float prob_one_card_tern = 0.0f;
 						float prob_one_card_river = 0.0f;
 
-						if (max_flush_series == 4 || filtered_one) {
+						if (max_flush_series == 4) {
 							prob_one_card_tern = (straight_one_need_cards * 3.0f) / count_all_cards_tern;
 							prob_one_card_river = (straight_one_need_cards * 3.0f) / count_all_cards_river;
 						}
 						else {
-							prob_one_card_tern = (straight_one_need_cards * 4.0f) / count_all_cards_tern;
-							prob_one_card_river = (straight_one_need_cards * 4.0f) / count_all_cards_river;
+							prob_one_card_tern = (((straight_one_need_cards - count_matching_one_card) * 4.0f) + (count_matching_one_card * 3.0f))
+								/ count_all_cards_tern;
+
+							prob_one_card_river = (((straight_one_need_cards - count_matching_one_card) * 4.0f) + (count_matching_one_card * 3.0f))
+								/ count_all_cards_river;
 						}
 						
 						probability_tern = prob_one_card_tern;
