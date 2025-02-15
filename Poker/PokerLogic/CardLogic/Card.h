@@ -22,7 +22,7 @@ namespace Tools {
 		}
 	};
 
-	constexpr auto values_cards = [](std::uint8_t power) -> char {
+	constexpr auto int_to_cards = [](std::uint8_t power) -> char {
 		switch (power) {
 			case 2: return '2';
 			case 3: return '3';
@@ -51,13 +51,30 @@ namespace Tools {
 		}
 	};
 
+	constexpr auto int_to_suits = [](std::uint8_t int_suit) -> char {
+		switch (int_suit) {
+			case 1: return 'C';
+			case 2: return 'D';
+			case 3: return 'H';
+			case 4: return 'S';
+			default: throw std::runtime_error("Uncorrected suit");
+		}
+	};
+
 	constexpr auto comparator = 
 		[](std::pair<char, std::uint8_t> p1, std::pair<char, std::uint8_t> p2) {
 			return cards(p1.first) < cards(p2.first);
 	};
 
-	constexpr auto suit_check = [](char s) {
-		return (s == 'S' || s == 'H' || s == 'D' || s == 'C');
+	constexpr auto suit_check = [](char suit) {
+		return (suit == 'S' || suit == 'H' || suit == 'D' || suit == 'C');
+	};
+
+	constexpr auto value_check = [](char value) {
+		return (value == '2' || value == '3' || value == '4' || value == '5'
+			|| value == '6' || value == '7' || value == '8' || value == '9'
+			|| value == 'T' || value == 'J' || value == 'Q' || value == 'K'
+			|| value == 'A');
 	};
 }
 

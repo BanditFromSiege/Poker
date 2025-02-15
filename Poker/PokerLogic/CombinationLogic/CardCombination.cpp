@@ -194,7 +194,7 @@ CardCombination::CardCombination(const std::span<Card>& vector_of_cards) {
 
 		for (std::uint8_t i = 0; i < values.size(); ++i) {
 			if (values[i] != 0) {
-				player_cards.push_back({Tools::values_cards(i + 2), values[i]});
+				player_cards.push_back({Tools::int_to_cards(i + 2), values[i]});
 			}
 		}
 
@@ -441,6 +441,99 @@ namespace Poker {
 			throw std::runtime_error("Uncorrected count of cards for this stage");
 		}
 
+		std::array<char, 5> striaght_combination_1 = { '2','3','4','5','6' };
+		std::array<char, 5> striaght_combination_2 = { '3','4','5','6','7' };
+		std::array<char, 5> striaght_combination_3 = { '4','5','6','7','8' };
+		std::array<char, 5> striaght_combination_4 = { '5','6','7','8','9' };
+		std::array<char, 5> striaght_combination_5 = { '6','7','8','9','T' };
+		std::array<char, 5> striaght_combination_6 = { '7','8','9','T','J' };
+		std::array<char, 5> striaght_combination_7 = { '8','9','T','J','Q' };
+		std::array<char, 5> striaght_combination_8 = { '9','T','J','Q','K' };
+		std::array<char, 5> striaght_combination_9 = { 'T','J','Q','K','A' };
+		std::array<char, 5> striaght_combination_10 = { '2','J','Q','K','A' };
+		std::array<char, 5> striaght_combination_11 = { '2','3','Q','K','A' };
+		std::array<char, 5> striaght_combination_12 = { '2','3','4','K','A' };
+		std::array<char, 5> striaght_combination_13 = { '2','3','4','5','A' };
+
+		std::array<std::array<char, 5>, 13> all_straight_combinations = {
+			striaght_combination_1, striaght_combination_2, striaght_combination_3,
+			striaght_combination_4, striaght_combination_5, striaght_combination_6,
+			striaght_combination_7, striaght_combination_8, striaght_combination_9,
+			striaght_combination_10, striaght_combination_11, striaght_combination_12,
+			striaght_combination_13
+		};
+
+		auto find_outs = [](std::array<char, 5> cards, const std::vector<std::pair<char, std::uint8_t>>& vector_of_cards)
+			-> std::pair<char, char>
+		{
+			std::pair<char, char> result = { ' ', ' ' };
+
+			if (vector_of_cards.size() < 3) {
+				return result;
+			}
+
+			std::vector<char> values_of_card;
+			values_of_card.reserve(5);
+
+			for (auto pair : vector_of_cards) {
+				values_of_card.push_back(pair.first);
+			}
+
+			std::vector<char> res;
+
+			std::set_difference(
+				cards.begin(),
+				cards.end(),
+				values_of_card.begin(),
+				values_of_card.end(),
+				std::back_inserter(res),
+				[](char card_from_cards, char card_from_values_of_card) {
+					return Tools::cards(card_from_cards) < Tools::cards(card_from_values_of_card);
+				}
+			);
+
+			if (res.size() == 1) {
+				result.first = res.back();
+			}
+			else if (res.size() == 2) {
+				result.first = res.front();
+				result.second = res.back();
+			}
+
+			return result;
+		};
+
+		auto straight_check = [&all_straight_combinations, &find_outs]
+		(const std::vector<std::pair<char, std::uint8_t>>& vector_of_cards, bool straight_flush = false)
+			-> std::pair<std::vector<char>, std::vector<std::pair<char,char>>>
+		{
+			std::unordered_set<char> one_cards;
+			std::unordered_set <std::pair<char, char>, decltype([](std::pair<char, char> pair) {
+				std::size_t h1 = std::hash<char>{}(pair.first);
+				std::size_t h2 = std::hash<char>{}(pair.second);
+				return h1 << h2;
+			})> pairs_cards;
+
+			for (std::uint8_t i = 0; i < all_straight_combinations.size(); ++i) {
+				if (i != 8 || !straight_flush) {
+					auto pair_outs = find_outs(all_straight_combinations[i], vector_of_cards);
+
+					if (!(pair_outs.first == ' ' && pair_outs.second == ' ')) {
+						if (pair_outs.second == ' ') {
+							one_cards.emplace(pair_outs.first);
+						}
+						else {
+							pairs_cards.emplace(pair_outs);
+						}
+					}
+				}
+			}
+			return { 
+				std::vector<char>(one_cards.begin(), one_cards.end()),
+				std::vector<std::pair<char,char>>(pairs_cards.begin(), pairs_cards.end())
+			};
+		};
+
 		CardCombination combination = vector_of_cards;
 		Poker::Combination current_power = combination.GetPower();
 
@@ -450,255 +543,365 @@ namespace Poker {
 		std::array<std::uint8_t, 13> values = { 0 };
 		std::array<std::uint8_t, 4> suits = { 0 };
 
-		for (Card c : vector_of_cards) {
-			++values[Tools::cards(c.Power()) - 2];
-			++suits[Tools::suits(c.Suit()) - 1];
+		for (Card card : vector_of_cards) {
+			++values[Tools::cards(card.Power()) - 2];
+			++suits[Tools::suits(card.Suit()) - 1];
 		}
+
+		std::vector<std::pair<char, std::uint8_t>> player_cards;
+		player_cards.reserve(Poker::count_of_cards_on_flop);
+
+		for (std::uint8_t i = 0; i < values.size(); ++i) {
+			if (values[i] != 0) {
+				player_cards.push_back({ Tools::int_to_cards(i + 2), values[i] });
+			}
+		}
+		std::sort(player_cards.begin(), player_cards.end(), Tools::comparator);
+
+		std::uint8_t max_flush_series = 0;
+		for (auto suit : suits) {
+			max_flush_series = std::max(max_flush_series, suit);
+		}
+
+		char top_suit = ' ';
+		for (std::uint8_t i = 0; i < suits.size(); ++i) {
+			if (max_flush_series == suits[i]) {
+				top_suit = Tools::int_to_suits(i + 1);
+				break;
+			}
+		}
+
+		std::vector<Card> suited_cards;
+		suited_cards.reserve(Poker::count_of_cards_on_flop);
+
+		std::copy_if(vector_of_cards.begin(), vector_of_cards.end(), std::back_inserter(suited_cards),
+			[&top_suit](Card card) {
+				return card.Suit() == top_suit;
+			}
+		);
+		std::sort(suited_cards.begin(), suited_cards.end());
+
+		std::vector<std::pair<char, std::uint8_t>> straight_flush_cards;
+		straight_flush_cards.reserve(5);
+
+		for (Card card : suited_cards) {
+			straight_flush_cards.push_back({ card.Power(), 1 });
+		}
+
+		std::pair<std::vector<char>, std::vector<std::pair<char, char>>> straight_outs
+			= straight_check(player_cards);
+
+		std::pair<std::vector<char>, std::vector<std::pair<char, char>>> straight_flush_outs
+			= straight_check(straight_flush_cards, true);
+
+		std::uint8_t straight_one_need_cards = straight_outs.first.size();
+		std::uint8_t straight_two_need_cards = straight_outs.second.size();
+
+		std::uint8_t straight_flush_one_need_cards = straight_flush_outs.first.size();
+		std::uint8_t straight_flush_two_need_cards = straight_flush_outs.second.size();
+
+		auto compare_pair = [](auto pair_1, auto pair_2) {
+			return ((pair_1.first == pair_2.first) || (pair_1.first == pair_2.second)
+				&& (pair_1.second == pair_2.first) || (pair_1.second == pair_2.second));
+		};
+
+		constexpr float count_all_cards_tern = 47.0f;
+		constexpr float count_all_cards_river = 46.0f;
 
 		for (std::uint8_t predict_power = static_cast<std::uint8_t>(current_power) + 1;
 			predict_power <= 9; ++predict_power)
 		{
 			//Pair
 			if (predict_power == static_cast<std::uint8_t>(Poker::Combination::Pair)) {
-				constexpr float probabilty_tern = 15.0f / 47.0f;
-				constexpr float probabilty_river = 18.0f / 46.0f;
-				constexpr float probabilty_tern_or_river = probabilty_tern + probabilty_river;
+				float probability_tern = 0.0f;
+				float probability_river = 0.0f;
+				float probability_tern_or_river = 0.0f;
+
+				if (max_flush_series == 4) {
+					probability_tern = (5.0f * 2.0f) / count_all_cards_tern;
+					probability_river = (6.0f * 2.0f) / count_all_cards_river;
+				}
+				else {
+					probability_tern = (5.0f * 3.0f) / count_all_cards_tern;
+					probability_river = (6.0f * 3.0f) / count_all_cards_river;
+				}
+
+				probability_tern_or_river = probability_tern + probability_river;
 
 				results[count_of_results++]
-					= { probabilty_tern, probabilty_river, probabilty_tern_or_river, Poker::Combination::Pair };
+					= { probability_tern, probability_river, probability_tern_or_river, Poker::Combination::Pair };
 			}
 			//Two_pair
 			else if (predict_power == static_cast<std::uint8_t>(Poker::Combination::Two_pair)) {
-				if (current_power == Poker::Combination::Pair) {
-					constexpr float probabilty_tern = 9.0f / 47.0f;
-					constexpr float probabilty_river = 12.0f / 46.0f;
-					constexpr float probabilty_tern_or_river = probabilty_tern + probabilty_river;
+				float probability_tern = 0.0f;
+				float probability_river = 0.0f;
+				float probability_tern_or_river = 0.0f;
 
-					results[count_of_results++]
-						= { probabilty_tern, probabilty_river, probabilty_tern_or_river, Poker::Combination::Two_pair };
+				if (current_power == Poker::Combination::Pair) {
+					if (max_flush_series == 4) {
+						probability_tern = (3.0f * 2.0f) / count_all_cards_tern;
+						probability_river = (4.0f * 2.0f) / count_all_cards_river;
+					}
+					else {
+						probability_tern = (3.0f * 3.0f) / count_all_cards_tern;
+						probability_river = (4.0f * 3.0f) / count_all_cards_river;
+					}
+
+					probability_tern_or_river = probability_tern + probability_river;
 				}
 				else if (current_power == Poker::Combination::High_card) {
-					constexpr float probabilty_river = (15.0f / 47.0f) * (12.0f / 46.0f);
-
-					results[count_of_results++]
-						= { 0.0f, probabilty_river, 0.0f, Poker::Combination::Two_pair };
+					if (max_flush_series >= 3) {
+						probability_river = ((5.0f * 2.0f) / count_all_cards_tern) * ((4.0f * 2.0f) / count_all_cards_river);
+					}
+					else {
+						probability_river = ((5.0f * 3.0f) / count_all_cards_tern) * ((4.0f * 3.0f) / count_all_cards_river);
+					}
 				}
+
+				results[count_of_results++]
+					= { probability_tern, probability_river, probability_tern_or_river, Poker::Combination::Two_pair };
 			}
 			//Set
 			else if (predict_power == static_cast<std::uint8_t>(Poker::Combination::Set)) {
-				if (current_power == Poker::Combination::Two_pair) {
-					results[count_of_results++]
-						= { 0.0f, 0.0f, 0.0f, Poker::Combination::Set };
-				}
-				else if (current_power == Poker::Combination::Pair) {
-					constexpr float probabilty_tern = 2.0f / 47.0f;
-					constexpr float probabilty_river = 2.0f / 46.0f;
-					constexpr float probabilty_tern_or_river = probabilty_tern + probabilty_river;
+				float probability_tern = 0.0f;
+				float probability_river = 0.0f;
+				float probability_tern_or_river = 0.0f;
 
-					results[count_of_results++]
-						= { probabilty_tern, probabilty_river, probabilty_tern_or_river, Poker::Combination::Set };
+				//Two pair: Nothing
+
+				if (current_power == Poker::Combination::Pair) {
+					if (max_flush_series == 4) {
+						probability_tern = 1.0f / count_all_cards_tern;
+						probability_river = 1.0f / count_all_cards_river;
+					}
+					else {
+						probability_tern = 2.0f / count_all_cards_tern;
+						probability_river = 2.0f / count_all_cards_river;
+					}
+					
+					probability_tern_or_river = probability_tern + probability_river;
 				}
 				else if (current_power == Poker::Combination::High_card) {
-					constexpr float probabilty_river = (15.0f / 47.0f) * (2.0f / 46.0f);
-
-					results[count_of_results++]
-						= { 0.0f, probabilty_river, 0.0f, Poker::Combination::Set };
+					if (max_flush_series >= 3) {
+						probability_river = ((5.0f * 2.0f) / count_all_cards_tern) * (1.0f / count_all_cards_river);
+					}
+					else {
+						probability_river = ((5.0f * 3.0f) / count_all_cards_tern) * (2.0f / count_all_cards_river);
+					}
 				}
+
+				results[count_of_results++]
+					= { probability_tern, probability_river, probability_tern_or_river, Poker::Combination::Set };
 			}
 			//Straight
 			else if (predict_power == static_cast<std::uint8_t>(Poker::Combination::Straight)) {
-				//Maybe remake
-				std::vector<std::pair<char, std::uint8_t>> player_cards;
-				player_cards.reserve(Poker::count_of_cards_on_flop);
+				float probability_tern = 0.0f;
+				float probability_river = 0.0f;
+				float probability_tern_or_river = 0.0f;
 
-				for (std::uint8_t i = 0; i < values.size(); ++i) {
-					if (values[i] != 0) {
-						player_cards.push_back({ Tools::values_cards(i + 2), values[i] });
+				bool filtered_one = false;
+				bool filtered_two = false;
+
+				if (straight_one_need_cards != 0) {
+					if (!straight_outs.first.empty() && !straight_flush_outs.first.empty()) {
+						if (((straight_outs.first[0] == straight_flush_outs.first[0])
+							|| (straight_outs.first[0] == straight_flush_outs.first[1])) ||
+							(straight_outs.first[1] == straight_flush_outs.first[0])
+							|| (straight_outs.first[1] == straight_flush_outs.first[1]))
+						{
+							filtered_one = true;
+						}
+					}
+				}
+				else if (straight_two_need_cards != 0) {
+					if (!straight_outs.second.empty() && !straight_flush_outs.second.empty()) {
+						if (((compare_pair(straight_outs.second[0], straight_flush_outs.second[0]))
+							|| (compare_pair(straight_outs.second[0], straight_flush_outs.second[1]))) ||
+							((compare_pair(straight_outs.second[1], straight_flush_outs.second[0]))
+								|| (compare_pair(straight_outs.second[1], straight_flush_outs.second[1]))))
+						{
+							filtered_two = true;
+						}
 					}
 				}
 
-				std::sort(player_cards.begin(), player_cards.end(), Tools::comparator);
+				if (player_cards.size() >= 3) {
+					if (straight_one_need_cards == 0) {
+						float prob_two_cards = 0.0f;
 
-				std::array<std::uint8_t, 5> diff = {0, 0, 0, 0, 0};
-				std::uint8_t count_diff = 0;
-
-				std::uint8_t straight_series = 0;
-				for (std::uint8_t i = 1; i < player_cards.size(); ++i) {
-					diff[count_diff] = std::abs(Tools::cards(player_cards[i].first)
-						- Tools::cards(player_cards[i - 1].first));
-
-					if (diff[count_diff] == 1) {
-						++straight_series;
-					}
-					++count_diff;
-				}
-
-				if (player_cards.back().first == 'A' && player_cards.front().first == '2') {
-					++straight_series;
-					++diff[count_diff];
-					++count_diff;
-
-					for (std::int8_t i = diff.size() - 1; i > 0; --i) {
-						std::swap(diff[i], diff[i - 1]);
-					}
-				}
-
-				float probabilty_tern = 0.0f;
-				float probabilty_river = 0.0f;
-				float probabilty_tern_or_river = 0.0f;
-
-				std::uint8_t max_length = 0;
-				std::uint8_t temp_length = 0;
-
-				std::uint8_t begin_position = 0;
-				std::uint8_t temp_position = 0;
-
-				if (straight_series >= 2) {
-					bool begin = true;
-					for (std::uint8_t i = 0; i < diff.size(); ++i) {
-						if (diff[i] == 1) {
-							++temp_length;
-							if (begin) {
-								temp_position = i;
-								begin = false;
-							}
+						if (max_flush_series >= 3 || filtered_two) {
+							prob_two_cards = 2.0f * ((3.0f / count_all_cards_tern) * (3.0f / count_all_cards_river));
 						}
 						else {
-							if (max_length < temp_length) {
-								max_length = temp_length;
-								begin_position = temp_position;
-							}
-							begin = true;
-							temp_length = 0;
-						}
-					}
-					max_length = std::max(temp_length, max_length);
-
-					if (max_length == 3) {
-						probabilty_tern = 8.0f / 47.0f;
-						probabilty_river = 8.0f / 46.0f;
-						probabilty_tern_or_river = probabilty_tern + probabilty_river;
-					}
-					else if (max_length == 2) {
-						std::uint8_t next_index = begin_position + max_length;
-						std::int8_t prev_index = begin_position - 1;
-
-						if (next_index <= 4) {
-							if (diff[next_index] == 2) {
-								probabilty_tern += 4.0f / 47.0f;
-								probabilty_river += 4.0f / 46.0f;
-							}
-							else if (diff[next_index] >= 3) {
-								probabilty_river += (4.0f / 47.0f) * (4.0f / 46.0f);
-							}
+							prob_two_cards = 2.0f * ((4.0f / count_all_cards_tern) * (4.0f / count_all_cards_river));
 						}
 
-						if (prev_index >= 0) {
-							if (diff[prev_index] == 2) {
-								probabilty_tern += 4.0f / 47.0f;
-								probabilty_river += 4.0f / 46.0f;
-							}
-							else if (diff[prev_index] >= 3) {
-								probabilty_river += (4.0f / 47.0f) * (4.0f / 46.0f);
-							}
-						}
-
-						else if (prev_index < 0) {
-							if (next_index <= 4 && diff[next_index] >= 3) {
-								probabilty_river += (4.0f / 47.0f) * (8.0f / 46.0f);
-							}
-							else {
-								probabilty_river += (4.0f / 47.0f) * (4.0f / 46.0f);
-							}
-						}
+						probability_river = straight_two_need_cards * prob_two_cards;
 					}
-					else if (max_length == 1) {
-						//TODO
-						std::uint8_t next_index = begin_position + 1;
-						std::int8_t prev_index = begin_position - 1;
-					}
+					else {
+						float prob_one_card_tern = 0.0f;
+						float prob_one_card_river = 0.0f;
 
-					results[count_of_results++]
-						= { probabilty_tern, probabilty_river, probabilty_tern_or_river, Poker::Combination::Straight };
+						if (max_flush_series == 4 || filtered_one) {
+							prob_one_card_tern = (straight_one_need_cards * 3.0f) / count_all_cards_tern;
+							prob_one_card_river = (straight_one_need_cards * 3.0f) / count_all_cards_river;
+						}
+						else {
+							prob_one_card_tern = (straight_one_need_cards * 4.0f) / count_all_cards_tern;
+							prob_one_card_river = (straight_one_need_cards * 4.0f) / count_all_cards_river;
+						}
+						
+						probability_tern = prob_one_card_tern;
+						probability_river = prob_one_card_river;
+						probability_tern_or_river = probability_tern + probability_river;
+					}
 				}
-				else {
-					results[count_of_results++]
-						= { 0.0f, 0.0f, 0.0f, Poker::Combination::Straight };
-				}
+
+				results[count_of_results++]
+					= { probability_tern, probability_river, probability_tern_or_river, Poker::Combination::Straight };
+				
 			}
 			//Flush
 			else if (predict_power == static_cast<std::uint8_t>(Poker::Combination::Flush)) {
-				std::uint8_t max_flush_series = 0;
-				for (auto suit : suits) {
-					max_flush_series = std::max(max_flush_series, suit);
-				}
+				float probability_tern = 0.0f;
+				float probability_river = 0.0f;
+				float probability_tern_or_river = 0.0f;
 
 				if (max_flush_series == 4) {
-					constexpr float probabilty_tern = 9.0f / 47.0f;
-					constexpr float probabilty_river = 9.0f / 46.0f;
-					constexpr float probabilty_tern_or_river = probabilty_tern + probabilty_river;
-
-					results[count_of_results++]
-						= { probabilty_tern, probabilty_river, probabilty_tern_or_river, Poker::Combination::Flush };
+					probability_tern = (9.0f - straight_flush_one_need_cards) / count_all_cards_tern;
+					probability_river = (9.0f - straight_flush_one_need_cards) / count_all_cards_river;
+					probability_tern_or_river = probability_tern + probability_river;
 				}
 				else if (max_flush_series == 3) {
-					constexpr float probabilty_river = (9.0f / 47.0f) * (9.0f / 46.0f);
+					if (straight_flush_one_need_cards == 0) {
+						probability_river = (10.0f / count_all_cards_tern)
+							* ((9.0f - straight_flush_two_need_cards) / count_all_cards_river);
+					}
+					else {
+						probability_river = ((10.0f - straight_flush_one_need_cards) / count_all_cards_tern)
+							* ((9.0f - straight_flush_one_need_cards) / count_all_cards_river);
+					}
+				}
 
-					results[count_of_results++]
-						= { 0.0f, probabilty_river, 0.0f, Poker::Combination::Flush };
-				}
-				else {
-					results[count_of_results++]
-						= { 0.0f, 0.0f, 0.0f, Poker::Combination::Flush };
-				}
+				results[count_of_results++]
+					= { probability_tern, probability_river, probability_tern_or_river, Poker::Combination::Flush };
 			}
 			//Full_house
 			else if (predict_power == static_cast<std::uint8_t>(Poker::Combination::Full_house)) {
-				if (current_power == Poker::Combination::Flush) {
-					//TODO
-				}
-				else if (current_power == Poker::Combination::Straight) {
-					results[count_of_results++]
-						= { 0.0f, 0.0f, 0.0f, Poker::Combination::Full_house };
-				}
-				else if (current_power == Poker::Combination::Set) {
-					constexpr float probabilty_tern = 6.0f / 47.0f;
-					constexpr float probabilty_river = 6.0f / 46.0f;
-					constexpr float probabilty_tern_or_river = probabilty_tern + probabilty_river;
+				float probability_tern = 0.0f;
+				float probability_river = 0.0f;
+				float probability_tern_or_river = 0.0f;
 
-					results[count_of_results++]
-						= { probabilty_tern, probabilty_river, probabilty_tern_or_river, Poker::Combination::Full_house };
+				//Flush, Straight, High_card - Nothing
+
+				if (current_power == Poker::Combination::Set) {
+					probability_tern = 6.0f / count_all_cards_tern;
+					probability_river = 6.0f / count_all_cards_river;
+					probability_tern_or_river = probability_tern + probability_river;
 				}
 				else if (current_power == Poker::Combination::Two_pair) {
-					constexpr float probabilty_tern = 4.0f / 47.0f;
-					constexpr float probabilty_river = 4.0f / 46.0f;
-					constexpr float probabilty_tern_or_river = probabilty_tern + probabilty_river;
-
-					results[count_of_results++]
-						= { probabilty_tern, probabilty_river, probabilty_tern_or_river, Poker::Combination::Full_house };
+					probability_tern = 4.0f / count_all_cards_tern;
+					probability_river = 4.0f / count_all_cards_river;
+					probability_tern_or_river = probability_tern + probability_river;
 				}
 				else if (current_power == Poker::Combination::Pair) {
-					constexpr float probabilty_river = 2 * (2.0f / 47.0f) * (9.0f / 46.0f);
+					probability_river = 2 * (2.0f / count_all_cards_tern) * (9.0f / count_all_cards_river);
+				}
 
-					results[count_of_results++]
-						= { 0.0f, probabilty_river, 0.0f, Poker::Combination::Full_house };
-				}
-				else {
-					results[count_of_results++]
-						= { 0.0f, 0.0f, 0.0f, Poker::Combination::Full_house };
-				}
+				results[count_of_results++]
+					= { probability_tern, probability_river, probability_tern_or_river, Poker::Combination::Full_house };
 			}
 			//Care
 			else if (predict_power == static_cast<std::uint8_t>(Poker::Combination::Care)) {
-				//TODO
+				float probability_tern = 0.0f;
+				float probability_river = 0.0f;
+				float probability_tern_or_river = 0.0f;
+
+				//Flush, Straight, High_card - Nothing
+
+				if (current_power == Poker::Combination::Full_house) {
+					probability_tern = 1.0f / count_all_cards_tern;
+					probability_river = 1.0f / count_all_cards_river;
+					probability_tern_or_river = probability_tern + probability_river;
+				}
+				else if (current_power == Poker::Combination::Set) {
+					probability_tern = 1.0f / count_all_cards_tern;
+					probability_river = 1.0f / count_all_cards_river;
+					probability_tern_or_river = probability_tern + probability_river;
+				}
+				else if (current_power == Poker::Combination::Two_pair) {
+					probability_river = (4.0f / count_all_cards_tern) * (1.0f / count_all_cards_river);
+				}
+				else if (current_power == Poker::Combination::Pair) {
+					probability_river = (2.0f / count_all_cards_tern) * (1.0f / count_all_cards_river);
+				}
+
+				results[count_of_results++]
+					= { probability_tern, probability_river, probability_tern_or_river, Poker::Combination::Care };
 			}
 			//Straight_flush
 			else if (predict_power == static_cast<std::uint8_t>(Poker::Combination::Straight_flush)) {
-				//TODO
+				float probability_tern = 0.0f;
+				float probability_river = 0.0f;
+				float probability_tern_or_river = 0.0f;
+
+				//Care, Full_house - Nothing
+
+				if (current_power == Poker::Combination::Flush || current_power == Poker::Combination::Straight
+					|| current_power == Poker::Combination::Set || current_power == Poker::Combination::Two_pair
+					|| current_power == Poker::Combination::Pair|| current_power == Poker::Combination::High_card)
+				{
+					
+					if (straight_flush_cards.size() >= 3) {
+						if (straight_flush_one_need_cards == 0) {
+							constexpr float prob_two_cards = 2.0f * ((1.0f / count_all_cards_tern)
+								* (1.0f / count_all_cards_river));
+
+							probability_river = straight_flush_two_need_cards * prob_two_cards;
+						}
+						else {
+							float prob_one_card_tern = (straight_flush_one_need_cards * 1.0f) / count_all_cards_tern;
+							float prob_one_card_river = (straight_flush_one_need_cards * 1.0f) / count_all_cards_river;
+
+							probability_tern = prob_one_card_tern;
+							probability_river = prob_one_card_river;
+							probability_tern_or_river = probability_tern + probability_river;
+						}
+					}
+				}
+
+				results[count_of_results++]
+					= { probability_tern, probability_river, probability_tern_or_river, Poker::Combination::Straight_flush };
 			}
 			//Royal_flush
 			else if (predict_power == static_cast<std::uint8_t>(Poker::Combination::Royal_flush)) {
-				//TODO
+				float probability_tern = 0.0f;
+				float probability_river = 0.0f;
+				float probability_tern_or_river = 0.0f;
+				
+				auto need_cards = find_outs(striaght_combination_9, straight_flush_cards);
+				std::pair<std::uint8_t, std::uint8_t> outs = {0, 0};
+
+				outs.second += (need_cards.second != ' ' && need_cards.first != ' ');
+				outs.first += (need_cards.second == ' ' && need_cards.first != ' ');
+				
+				if (outs.first == 0) {
+					constexpr float prob_two_cards = 2.0f * ((1.0f / count_all_cards_tern)
+						* (1.0f / count_all_cards_river));
+
+					probability_river = outs.second * prob_two_cards;
+				}
+				else {
+					float prob_one_card_tern = (outs.first * 1.0f) / count_all_cards_tern;
+					float prob_one_card_river = (outs.first * 1.0f) / count_all_cards_river;
+
+					probability_tern = prob_one_card_tern;
+					probability_river = prob_one_card_river;
+					probability_tern_or_river = probability_tern + probability_river;
+				}
+
+				results[count_of_results++]
+					= { probability_tern, probability_river, probability_tern_or_river, Poker::Combination::Royal_flush };
 			}
 		}
 		return results;

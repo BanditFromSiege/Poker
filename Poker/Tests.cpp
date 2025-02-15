@@ -248,9 +248,222 @@ namespace Tests {
 		assert(run_test("6S 3S AC KH 9H QS 7D", "6S 3S AC KH 9H JH TC", Poker::Result::Win));
 	}
 
+	void Test_distribution_probabilty(int number_of_ñard_shuffles = 5) {
+		std::vector<Card> cards = {
+			{'2','S'}, {'3','S'}, {'4','S'}, {'5','S'}, {'6','S'}, {'7','S'}, {'8','S'},
+			{'9','S'}, {'T','S'}, {'J','S'}, {'Q','S'}, {'K','S'}, {'A','S'},
+			{'2','H'}, {'3','H'}, {'4','H'}, {'5','H'}, {'6','H'}, {'7','H'}, {'8','H'},
+			{'9','H'}, {'T','H'}, {'J','H'}, {'Q','H'}, {'K','H'}, {'A','H'},
+			{'2','D'}, {'3','D'}, {'4','D'}, {'5','D'}, {'6','D'}, {'7','D'}, {'8','D'},
+			{'9','D'}, {'T','D'}, {'J','D'}, {'Q','D'}, {'K','D'}, {'A','D'},
+			{'2','C'}, {'3','C'}, {'4','C'}, {'5','C'}, {'6','C'}, {'7','C'}, {'8','C'},
+			{'9','C'}, {'T','C'}, {'J','C'}, {'Q','C'}, {'K','C'}, {'A','C'}
+		};
+
+		std::random_device random_device;
+		auto ptr_to_rand_engine = std::make_unique<std::mt19937>(random_device());
+
+		std::vector<Card> cards_of_combinations;
+		cards_of_combinations.reserve(5);
+
+		for (int i = 0; i < number_of_ñard_shuffles; ++i) {
+			std::shuffle(cards.begin(), cards.end(), *ptr_to_rand_engine);
+
+			for (int j = 0; j < 5; ++j) {
+				cards_of_combinations.push_back(cards[j]);
+			}
+
+			CardCombination comb(cards_of_combinations);
+
+			if (comb.GetPower() == Poker::Combination::Flush) {
+				for (Card c : cards_of_combinations) {
+					std::cout << c << ' ';
+				}
+				std::cout << '\n';
+				comb.ShowCombination();
+				std::cout << '\n';
+
+				auto array_of_probability = Poker::Find_Probability(cards_of_combinations);
+
+				std::cout << "Tern" << '\t' << " River" << '\t' << " Tern or River" << '\t' << " Combination" << '\n' << '\n';
+				for (auto [x, y, z, c] : array_of_probability) {
+					if (c != Poker::Combination::High_card) {
+						std::cout << std::round(x * 100 * 100) / 100
+							<< "%\t" << std::round(y * 100 * 100) / 100 << "%\t"
+							<< std::round(z * 100 * 100) / 100 << "%\t" << '\t' << c << '\n' << '\n';
+					}
+				}
+				std::cout << '\n';
+			}
+
+			cards_of_combinations.clear();
+		}
+	}
+
+	void Test_find_probability(const std::span<Card>& vector_of_cards) {
+		//"7S", "8S", "9S", "TS", "KD"
+		//"7S", "8S", "9S", "TS", "KS"
+		//"TC", "QC", "6S", "7D", "2D" 
+		//"KS", "4S", "3S", "3C", "3H"
+
+		//"3H", "5D", "6D", "9S", "TD"
+		//"AH", "TD", "9H", "2S", "KH"
+		//"8H", "8C", "9H", "TH", "AH"
+		//"7H", "5D", "8D", "9D", "TD"
+		//"7H", "AD", "8D", "9D", "TD"
+		//"7H", "AD", "8D", "9D", "QD"
+		//"7H", "2D", "3D", "4C", "5D"
+		//"7H", "2D", "2H", "2C", "5H"
+
+		//"3D", "4D", "6S", "7D", "6H"
+		//"TD", "KD", "AD", "QD", "5H"
+
+		for (Card card : vector_of_cards) {
+			std::cout << card << ' ';
+		}
+		std::cout << '\n';
+
+		CardCombination card(vector_of_cards);
+
+		card.ShowCombination();
+		std::cout << '\n';
+
+		auto array = Poker::Find_Probability(vector_of_cards);
+
+		std::cout << "Tern" << '\t' << " River" << '\t' << " Tern or River" << '\t' << " Combination" << '\n' << '\n';
+		for (auto [x, y, z, c] : array) {
+			if (c != Poker::Combination::High_card) {
+				std::cout << std::round(x * 100 * 100) / 100
+					<< "%\t" << std::round(y * 100 * 100) / 100 << "%\t"
+					<< std::round(z * 100 * 100) / 100 << "%\t" << '\t' << c << '\n' << '\n';
+			}
+		}
+	}
+
+	void Test_combination_predictor() {
+		auto check_card = [](const std::string& card) {
+			return (card.size() == 2 && Tools::suit_check(std::toupper(card.back()))
+				&& Tools::value_check(std::toupper(card.front())));
+		};
+
+		std::string card;
+
+		std::array<std::string, 5> cards;
+
+		std::cout << "Enter your hand cards: " << '\n';
+
+		for (;;) {
+			std::cout << "1: ";
+			std::cin >> card;
+			if (check_card(card)) {
+				cards[0] = { card };
+				break;
+			} else {
+				std::cout << "Invalid card input, please try gain..." << '\n';
+			}
+		}
+
+		for (;;) {
+			std::cout << "2: ";
+			std::cin >> card;
+			if (check_card(card)) {
+				if (cards[0] != card) {
+					cards[1] = { card };
+					break;
+				}
+				else {
+					std::cout << "Entering identical cards, please try gain..." << '\n';
+				}
+			}
+			else {
+				std::cout << "Invalid card input, please try gain..." << '\n';
+			}
+		}
+
+		std::cout << '\n' << "Enter cards that are on the table: " << '\n';
+
+		for (;;) {
+			std::cout << "1: ";
+			std::cin >> card;
+			if (check_card(card)) {
+				if (cards[0] != card && cards[1] != card) {
+					cards[2] = { card };
+					break;
+				}
+				else {
+					std::cout << "Entering identical cards, please try gain..." << '\n';
+				}
+			}
+			else {
+				std::cout << "Invalid card input, please try gain..." << '\n';
+			}
+		}
+
+		for (;;) {
+			std::cout << "2: ";
+			std::cin >> card;
+			if (check_card(card)) {
+				if (cards[0] != card && cards[1] != card && cards[2] != card) {
+					cards[3] = { card };
+					break;
+				}
+				else {
+					std::cout << "Entering identical cards, please try gain..." << '\n';
+				}
+			}
+			else {
+				std::cout << "Invalid card input, please try gain..." << '\n';
+			}
+		}
+
+		for (;;) {
+			std::cout << "3: ";
+			std::cin >> card;
+			if (check_card(card)) {
+				if (cards[0] != card && cards[1] != card && cards[2] != card
+					&& cards[3] != card) 
+				{
+					cards[4] = { card };
+					break;
+				}
+				else {
+					std::cout << "Entering identical cards, please try gain..." << '\n';
+				}
+			}
+			else {
+				std::cout << "Invalid card input, please try gain..." << '\n';
+			}
+		}
+
+		std::array<Card, 5> correct_cards = {};
+
+		for (std::uint8_t i = 0; auto & str : cards) {
+			correct_cards[i++] = str;
+		}
+
+		std::cout << '\n';
+		std::cout << "Your cards: " << correct_cards[0] << ' ' << correct_cards[1] << '\n';
+		std::cout << "Table cards: " << correct_cards[2] << ' ' << correct_cards[3] << ' ' << correct_cards[4] << '\n';
+
+		CardCombination comb = { correct_cards };
+		std::cout << '\n' << "Current combination: ";
+		comb.ShowCombination();
+		std::cout << '\n' << "Probabilities for stronger combinations: " << '\n' << '\n';
+
+		auto array_of_probability = Poker::Find_Probability(correct_cards);
+
+		std::cout << "Tern" << '\t' << " River" << '\t' << " Tern or River" << '\t' << " Combination" << '\n' << '\n';
+		for (auto [x, y, z, c] : array_of_probability) {
+			if (c != Poker::Combination::High_card) {
+				std::cout << std::round(x * 100 * 100) / 100
+					<< "%\t" << std::round(y * 100 * 100) / 100 << "%\t"
+					<< std::round(z * 100 * 100) / 100 << "%\t" << '\t' << c << '\n' << '\n';
+			}
+		}
+	}
+
 	void Run_tests() {
 		//test_check_combination_of_cards();
-
 		/*
 		Stopwatch<seconds> a;
 		Stopwatch<seconds> b;
@@ -265,8 +478,7 @@ namespace Tests {
 		Test_distribution_of_seven_comb_cards(1000000);
 		b.SetEndPoint();
 
-		b.ShowTime();
-		*/
+		b.ShowTime();*/
 
 		//test_of_stopwatch();
 		//test_wallpapper();
@@ -274,5 +486,8 @@ namespace Tests {
 		Unit_tests_five_card();
 		Unit_tests_six_card();
 		Unit_tests_seven_card();
+
+		Test_combination_predictor();
+		//Test_distribution_probabilty(100);
 	}
 }

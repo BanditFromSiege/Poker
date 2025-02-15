@@ -11,26 +11,19 @@ namespace Tests {
 	extern void Unit_tests_six_card();
 	extern void Unit_tests_seven_card();
 
+	extern void Test_distribution_probabilty(int number_of_ñard_shuffles = 5);
+	extern void Test_find_probability(const std::span<Card>& vector_of_cards);
+	extern void Test_combination_predictor();
+
 	extern void Run_tests();
 }
 
 int main() {
 	Tests::Run_tests();
+
+	//std::vector<Card> vec = { "7S", "6H", "8S", "9S", "TS" };
+	//Tests::Test_find_probability(vec);
 	
-	//"3H", "5D", "6D", "9S", "TD"
-	//"AH", "TD", "9H", "2S", "KH"
-
-	/*
-	std::vector<Card> vec = { "8H", "8C", "9H", "TH", "AH" };
-	auto array_of_probabilty = Poker::Find_Probability(vec);
-
-	std::cout << "Tern" << '\t' << " River" << '\t' << " Tern or River" << '\t' << " Combination" << '\n' << '\n';
-	for (auto [x, y, z, c] : array_of_probabilty) {
-		if (c != Poker::Combination::High_card) {
-			std::cout << x * 100 << '\t' << y * 100 << '\t' << z * 100 << '\t' << '\t' << c << '\n' << '\n';
-		}
-	}*/
-
 	/*
 	auto ptr = std::make_unique<ConsolePokerGame>();
 	(*ptr).Run();*/
