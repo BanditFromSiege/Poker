@@ -9,6 +9,8 @@
 #include <array>
 #include <span>
 
+#include <execution>
+
 #include <chrono>
 #include <algorithm>
 #include <memory>

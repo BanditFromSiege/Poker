@@ -56,7 +56,7 @@ void ConsolePokerGame::InitializationHands() {
 		position_dealer = (++position_dealer) % count_players;
 	}
 
-	bigBlind = bigBlind * ((++round_count / 5) + 1);
+	bigBlind = bigBlind * ((rounds++ / 5) + 1);
 }
 
 bool ConsolePokerGame::Everyone_did_bet() {

@@ -23,13 +23,31 @@ CardCombination CardCombination::Find_best_six_cards(const std::span<Card>& vec_
 	std::array<Card, 5> combination_6 =
 		{ vec_of_cards[5], vec_of_cards[1], vec_of_cards[2], vec_of_cards[3], vec_of_cards[4] };
 
-	std::array<std::array<Card, 5>, 6> combinations = {
-		combination_1, combination_2, combination_3, combination_4, combination_5, combination_6
-	};
+	constexpr std::array<std::int8_t, 6> numb = { 0,1,2,3,4,5 };
 
-	CardCombination res = { combinations[0] };
+	std::array<CardCombination, 6> combinations;
+
+	std::for_each(std::execution::par_unseq, numb.begin(), numb.end(), [&](std::int8_t i) {
+		switch (i) {
+		case 0: combinations[i] = CardCombination(combination_1);
+			break;
+		case 1: combinations[i] = CardCombination(combination_2);
+			break;
+		case 2: combinations[i] = CardCombination(combination_3);
+			break;
+		case 3: combinations[i] = CardCombination(combination_4);
+			break;
+		case 4: combinations[i] = CardCombination(combination_5);
+			break;
+		case 5: combinations[i] = CardCombination(combination_6);
+			break;
+		default: break;
+		}
+	});
+	
+	CardCombination res = combinations[0];
 	for (std::uint8_t i = 1; i < combinations.size(); ++i) {
-		res = std::max(res, CardCombination(combinations[i]));
+		res = std::max(res, combinations[i]);
 	}
 
 	return res;
@@ -118,16 +136,63 @@ CardCombination CardCombination::Find_best_seven_cards(const std::span<Card>& ve
 	std::array<Card, 5> combination_21 =
 		{ vec_of_cards[5], vec_of_cards[1], vec_of_cards[2], vec_of_cards[3], vec_of_cards[6] };
 
-	std::array<std::array<Card, 5>, 21> combinations = { 
-		combination_1, combination_2, combination_3, combination_4, combination_5, combination_6,
-		combination_7, combination_8, combination_9, combination_10, combination_11, combination_12,
-		combination_13, combination_14, combination_15, combination_16, combination_17, combination_18,
-		combination_19, combination_20, combination_21 
+	constexpr std::array<std::int8_t, 21> numb = {
+		0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
 	};
 
-	CardCombination res = { combinations[0] };
+	std::array<CardCombination, 21> combinations;
+
+	std::for_each(std::execution::par_unseq, numb.begin(), numb.end(), [&](std::int8_t i) {
+		switch (i) {
+		case 0: combinations[i] = CardCombination(combination_1);
+			break;
+		case 1: combinations[i] = CardCombination(combination_2);
+			break;
+		case 2: combinations[i] = CardCombination(combination_3);
+			break;
+		case 3: combinations[i] = CardCombination(combination_4);
+			break;
+		case 4: combinations[i] = CardCombination(combination_5);
+			break;
+		case 5: combinations[i] = CardCombination(combination_6);
+			break;
+		case 6: combinations[i] = CardCombination(combination_7);
+			break;
+		case 7: combinations[i] = CardCombination(combination_8);
+			break;
+		case 8: combinations[i] = CardCombination(combination_9);
+			break;
+		case 9: combinations[i] = CardCombination(combination_10);
+			break;
+		case 10: combinations[i] = CardCombination(combination_11);
+			break;
+		case 11: combinations[i] = CardCombination(combination_12);
+			break;
+		case 12: combinations[i] = CardCombination(combination_13);
+			break;
+		case 13: combinations[i] = CardCombination(combination_14);
+			break;
+		case 14: combinations[i] = CardCombination(combination_15);
+			break;
+		case 15: combinations[i] = CardCombination(combination_16);
+			break;
+		case 16: combinations[i] = CardCombination(combination_17);
+			break;
+		case 17: combinations[i] = CardCombination(combination_18);
+			break;
+		case 18: combinations[i] = CardCombination(combination_19);
+			break;
+		case 19: combinations[i] = CardCombination(combination_20);
+			break;
+		case 20: combinations[i] = CardCombination(combination_21);
+			break;
+		default: break;
+		}
+	});
+
+	CardCombination res = combinations[0];
 	for (std::uint8_t i = 1; i < combinations.size(); ++i) {
-		res = std::max(res, CardCombination(combinations[i]));
+		res = std::max(res, combinations[i]);
 	}
 
 	return res;
@@ -599,11 +664,6 @@ namespace Poker {
 
 		std::uint8_t straight_flush_one_need_cards = straight_flush_outs.first.size();
 		std::uint8_t straight_flush_two_need_cards = straight_flush_outs.second.size();
-
-		auto compare_pair = [](auto pair_1, auto pair_2) {
-			return ((pair_1.first == pair_2.first) || (pair_1.first == pair_2.second)
-				&& (pair_1.second == pair_2.first) || (pair_1.second == pair_2.second));
-		};
 
 		std::sort(straight_outs.first.begin(), straight_outs.first.end(), 
 			[](char first, char second) {

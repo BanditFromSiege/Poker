@@ -20,10 +20,10 @@ namespace Tests {
 
 int main() {
 	Tests::Run_tests();
-
+	
 	//std::vector<Card> vec = { "TC", "9H", "2D", "TH", "JD" };
 	//Tests::Test_find_probability(vec);
-	
+
 	/*
 	auto ptr = std::make_unique<ConsolePokerGame>();
 	(*ptr).Run();*/

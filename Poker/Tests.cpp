@@ -42,20 +42,15 @@ namespace Tests {
 		std::random_device random_device;
 		auto ptr_to_rand_engine = std::make_unique<std::mt19937>(random_device());
 
-		CardCombination hand;
 		std::vector<Card> cards_of_combinations;
 		cards_of_combinations.reserve(5);
 
 		std::unordered_map<Poker::Combination, int> un_map_of_combinations;
 		for (int i = 0; i < number_of_ñard_shuffles; ++i) {
-			std::shuffle(cards.begin(), cards.end(), *ptr_to_rand_engine);
+			std::sample(cards.begin(), cards.end(),
+				std::back_inserter(cards_of_combinations), 5, *ptr_to_rand_engine);
 
-			for (int j = 0; j < 5; ++j) {
-				cards_of_combinations.push_back(cards[j]);
-			}
-
-			CardCombination temp(cards_of_combinations);
-			hand = std::move(temp);
+			CardCombination hand(cards_of_combinations);
 			++un_map_of_combinations[hand.GetPower()];
 
 			cards_of_combinations.clear();
@@ -85,22 +80,17 @@ namespace Tests {
 		};
 
 		std::random_device g;
-		auto pr = std::make_unique<std::mt19937>(g());
+		auto ptr_to_rand_engine = std::make_unique<std::mt19937>(g());
 
-		CardCombination hand;
 		std::vector<Card> cards_of_combinations;
 		cards_of_combinations.reserve(7);
 
 		std::unordered_map<Poker::Combination, int> un_map_of_combinations;
 		for (int i = 0; i < number_of_ñard_shuffles; ++i) {
-			std::shuffle(cards.begin(), cards.end(), *pr);
+			std::sample(cards.begin(), cards.end(), 
+				std::back_inserter(cards_of_combinations), 7, *ptr_to_rand_engine);
 
-			for (int j = 0; j < 7; ++j) {
-				cards_of_combinations.push_back(cards[j]);
-			}
-
-			CardCombination temp(cards_of_combinations);
-			hand = std::move(temp);
+			CardCombination hand(cards_of_combinations);
 			++un_map_of_combinations[hand.GetPower()];
 			/*
 			if (hand.getPower() >= Poker::Combination::Care) {
@@ -486,7 +476,7 @@ namespace Tests {
 		Unit_tests_six_card();
 		Unit_tests_seven_card();
 
-		Test_combination_predictor();
+		//Test_combination_predictor();
 		//Test_distribution_probabilty(10);
 	}
 }

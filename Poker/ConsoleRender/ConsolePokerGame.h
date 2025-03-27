@@ -16,8 +16,6 @@ private:
 	std::uint16_t bigBlind = 50;
 	std::uint16_t max_bet = 0;
 
-	std::uint8_t round_count = 0;
-
 	std::uint8_t count_players = 6;
 	std::uint8_t position_dealer = 0;
 	std::uint8_t position_player = random.GetRandomNumber(0, count_players - 1);
